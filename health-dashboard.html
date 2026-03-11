@@ -11,7 +11,7 @@ import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasej
 const cfg={apiKey:"AIzaSyCidOdcUAFj_ut6QraRD_o6q7oGCZxzTBo",authDomain:"kall-d863b.firebaseapp.com",projectId:"kall-d863b",storageBucket:"kall-d863b.firebasestorage.app",messagingSenderId:"431974110504",appId:"1:431974110504:web:ed26f567145d3a9e79ec1d"};
 const auth=getAuth(initializeApp(cfg));
 onAuthStateChanged(auth,u=>{
-  if(!u){window.location.href='login.html';return;}
+  if(!u){window.location.href='index.html';return;}
   window._uid=u.uid;
   const s=JSON.parse(localStorage.getItem('vt-set')||'{}');
   if(!s.name){s.name=(u.displayName||u.phoneNumber||'Foydalanuvchi').split(' ')[0];localStorage.setItem('vt-set',JSON.stringify(s));}
