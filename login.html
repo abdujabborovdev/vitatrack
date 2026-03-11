@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VitaTrack — Kirish</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080810;--s1:#0f0f1a;--s2:#161624;--s3:#1e1e30;--b1:#ffffff08;--b2:#ffffff14;--b3:#ffffff22;--tx:#f0f0f8;--mu:#5a5a78;--gr:#00e5a0;--bl:#4d8cff;--pu:#b06cff;--or:#ff7c4d;--re:#ff4d6d;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.blob{position:fixed;border-radius:50%;filter:blur(90px);opacity:.3;pointer-events:none;animation:blob 9s ease-in-out infinite;}
+.b1{width:500px;height:500px;background:radial-gradient(#00e5a0,transparent);top:-150px;left:-150px;}
+.b2{width:400px;height:400px;background:radial-gradient(#4d8cff,transparent);bottom:-100px;right:-100px;animation-delay:3s;}
+.b3{width:300px;height:300px;background:radial-gradient(#b06cff,transparent);top:50%;left:55%;animation-delay:6s;}
+@keyframes blob{0%,100%{transform:scale(1) translate(0,0);}50%{transform:scale(1.08) translate(15px,-15px);}}
+
+.card{position:relative;z-index:10;background:var(--s1);border:1px solid var(--b2);border-radius:28px;padding:36px;width:420px;max-width:96vw;box-shadow:0 30px 80px #00000060;animation:cardIn .5s cubic-bezier(.34,1.3,.64,1);}
+@keyframes cardIn{from{opacity:0;transform:translateY(28px) scale(.96)}to{opacity:1;transform:none}}
+
+.logo{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--gr);text-align:center;margin-bottom:2px;}
+.logo span{color:var(--mu);font-weight:400;}
+.tagline{text-align:center;font-size:12px;color:var(--mu);margin-bottom:28px;}
+
+/* Tabs */
+.tabs{display:flex;background:var(--s2);border-radius:14px;padding:4px;margin-bottom:24px;gap:4px;}
+.tab{flex:1;padding:9px;border-radius:10px;border:none;background:transparent;color:var(--mu);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;}
+.tab.on{background:var(--s3);color:var(--tx);box-shadow:0 2px 8px #00000040;}
+
+/* Method tabs */
+.method-tabs{display:flex;gap:8px;margin-bottom:20px;}
+.mtab{flex:1;padding:10px 6px;border-radius:12px;border:1px solid var(--b2);background:transparent;color:var(--mu);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;text-align:center;}
+.mtab.on{border-color:var(--bl);background:#4d8cff15;color:var(--bl);}
+
+/* Steps */
+.step{display:none;animation:fadeUp .3s ease;}
+.step.on{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Input */
+.fg{margin-bottom:14px;}
+.fl{font-size:11px;color:var(--mu);margin-bottom:5px;display:block;letter-spacing:.4px;}
+.fi{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--b1);background:var(--s2);color:var(--tx);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:all .2s;}
+.fi:focus{border-color:var(--bl);background:var(--s3);}
+.fi::placeholder{color:var(--mu);}
+.fi-row{display:flex;gap:8px;}
+.fi-row .fi{flex:1;}
+.country{width:80px;padding:12px 8px;border-radius:12px;border:1px solid var(--b1);background:var(--s2);color:var(--tx);font-size:13px;outline:none;cursor:pointer;text-align:center;}
+
+/* Password toggle */
+.pw-wrap{position:relative;}
+.pw-wrap .fi{padding-right:44px;}
+.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--mu);cursor:pointer;font-size:16px;padding:4px;}
+
+/* OTP */
+.otp-wrap{display:flex;gap:8px;justify-content:center;margin:16px 0;}
+.otp{width:46px;height:54px;border-radius:12px;border:1px solid var(--b2);background:var(--s2);color:var(--tx);font-family:'Syne',sans-serif;font-size:22px;font-weight:800;text-align:center;outline:none;transition:all .2s;}
+.otp:focus{border-color:var(--bl);background:var(--s3);}
+
+/* Buttons */
+.main-btn{width:100%;padding:13px;border-radius:13px;border:none;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,var(--gr),var(--bl));color:#000;}
+.main-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px #00e5a030;}
+.main-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.main-btn.blue{background:linear-gradient(135deg,var(--bl),var(--pu));color:#fff;}
+.main-btn.google{background:var(--s2);border:1px solid var(--b2);color:var(--tx);display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;}
+.main-btn.google:hover{background:var(--s3);box-shadow:none;}
+
+/* Divider */
+.div{display:flex;align-items:center;gap:10px;margin:16px 0;}
+.div-line{flex:1;height:1px;background:var(--b2);}
+.div-txt{font-size:11px;color:var(--mu);}
+
+/* Messages */
+.msg{border-radius:10px;padding:10px 13px;font-size:13px;margin-bottom:12px;display:none;line-height:1.5;}
+.msg.err{background:#ff4d6d12;border:1px solid #ff4d6d30;color:#ff8099;display:block;}
+.msg.ok{background:#00e5a012;border:1px solid #00e5a030;color:var(--gr);display:block;}
+
+/* Back */
+.back{background:none;border:none;color:var(--mu);font-size:13px;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;gap:5px;padding:0;transition:color .2s;}
+.back:hover{color:var(--tx);}
+
+/* Links */
+.link{background:none;border:none;color:var(--bl);font-size:13px;cursor:pointer;text-decoration:underline;}
+.forgot{display:block;text-align:right;margin-top:-8px;margin-bottom:14px;}
+
+/* Loader overlay */
+.loader{display:none;position:fixed;inset:0;z-index:999;background:#00000085;backdrop-filter:blur(6px);align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.loader.on{display:flex;}
+.spin{width:42px;height:42px;border:3px solid var(--b2);border-top-color:var(--gr);border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-txt{font-size:13px;color:var(--mu);}
+
+/* Phone display */
+.phone-show{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--bl);text-align:center;margin-bottom:4px;}
+.resend{background:none;border:none;color:var(--bl);font-size:12px;cursor:pointer;text-decoration:underline;display:block;margin:10px auto 0;}
+
+/* Profile setup */
+.avatar-pick{display:flex;gap:8px;margin-top:6px;}
+.av{width:36px;height:36px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .2s;flex-shrink:0;}
+.av:hover,.av.on{border-color:#fff;transform:scale(1.1);}
+</style>
+</head>
+<body>
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+<div id="recaptcha-container"></div>
+
+<div class="loader" id="loader">
+  <div class="spin"></div>
+  <div class="loader-txt" id="loader-txt">Kuting...</div>
+</div>
+
+<div class="card">
+  <div class="logo">Vita<span>Track</span></div>
+  <div class="tagline">Sog'liq kuzatuvchi platformasi 💚</div>
+
+  <!-- TABS: Kirish / Ro'yxat -->
+  <div class="tabs">
+    <button class="tab on" id="tab-login" onclick="switchMain('login')">Kirish</button>
+    <button class="tab" id="tab-reg" onclick="switchMain('reg')">Ro'yxatdan o'tish</button>
+  </div>
+
+  <div id="msg" class="msg"></div>
+
+  <!-- ═══════ LOGIN ═══════ -->
+  <div id="login-block" class="step on">
+    <!-- Method tabs -->
+    <div class="method-tabs">
+      <button class="mtab on" id="ml-email" onclick="switchMethod('email')">📧 Email</button>
+      <button class="mtab" id="ml-phone" onclick="switchMethod('phone')">📱 Telefon</button>
+      <button class="mtab" id="ml-google" onclick="loginGoogle()">🔵 Google</button>
+    </div>
+
+    <!-- Email login -->
+    <div id="login-email" class="step on">
+      <div class="fg"><label class="fl">Email manzil</label><input class="fi" id="le-email" type="email" placeholder="email@gmail.com" onkeydown="if(event.key==='Enter')loginEmail()"></div>
+      <div class="fg">
+        <label class="fl">Parol</label>
+        <div class="pw-wrap">
+          <input class="fi" id="le-pass" type="password" placeholder="Parolingiz" onkeydown="if(event.key==='Enter')loginEmail()">
+          <button class="pw-eye" onclick="togglePw('le-pass',this)">👁</button>
+        </div>
+      </div>
+      <button class="link forgot" onclick="forgotPass()">Parolni unutdim?</button>
+      <button class="main-btn" onclick="loginEmail()">Kirish →</button>
+    </div>
+
+    <!-- Phone login -->
+    <div id="login-phone" class="step">
+      <div class="fg">
+        <label class="fl">Telefon raqam</label>
+        <div class="fi-row">
+          <select class="country" id="lp-country">
+            <option value="+998">🇺🇿 +998</option>
+            <option value="+7">🇷🇺 +7</option>
+            <option value="+1">🇺🇸 +1</option>
+            <option value="+44">🇬🇧 +44</option>
+            <option value="+90">🇹🇷 +90</option>
+          </select>
+          <input class="fi" id="lp-num" type="tel" placeholder="901234567" maxlength="9" oninput="this.value=this.value.replace(/\D/g,'')" onkeydown="if(event.key==='Enter')sendSms('login')">
+        </div>
+      </div>
+      <button class="main-btn blue" onclick="sendSms('login')">SMS kod yuborish →</button>
+    </div>
+  </div>
+
+  <!-- ═══════ REGISTER ═══════ -->
+  <div id="reg-block" class="step">
+    <div class="method-tabs">
+      <button class="mtab on" id="mr-email" onclick="switchRegMethod('email')">📧 Email</button>
+      <button class="mtab" id="mr-phone" onclick="switchRegMethod('phone')">📱 Telefon</button>
+      <button class="mtab" id="mr-google" onclick="loginGoogle()">🔵 Google</button>
+    </div>
+
+    <!-- Email register -->
+    <div id="reg-email" class="step on">
+      <div class="fg"><label class="fl">Ism</label><input class="fi" id="re-name" type="text" placeholder="Ismingiz"></div>
+      <div class="fg"><label class="fl">Email manzil</label><input class="fi" id="re-email" type="email" placeholder="email@gmail.com"></div>
+      <div class="fg">
+        <label class="fl">Parol (kamida 6 ta belgi)</label>
+        <div class="pw-wrap">
+          <input class="fi" id="re-pass" type="password" placeholder="Parol o'ylab toping">
+          <button class="pw-eye" onclick="togglePw('re-pass',this)">👁</button>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Parolni tasdiqlang</label>
+        <div class="pw-wrap">
+          <input class="fi" id="re-pass2" type="password" placeholder="Parolni qayta kiriting" onkeydown="if(event.key==='Enter')registerEmail()">
+          <button class="pw-eye" onclick="togglePw('re-pass2',this)">👁</button>
+        </div>
+      </div>
+      <button class="main-btn" onclick="registerEmail()">Ro'yxatdan o'tish →</button>
+    </div>
+
+    <!-- Phone register -->
+    <div id="reg-phone" class="step">
+      <div class="fg"><label class="fl">Ism</label><input class="fi" id="rp-name" type="text" placeholder="Ismingiz"></div>
+      <div class="fg">
+        <label class="fl">Telefon raqam</label>
+        <div class="fi-row">
+          <select class="country" id="rp-country">
+            <option value="+998">🇺🇿 +998</option>
+            <option value="+7">🇷🇺 +7</option>
+            <option value="+1">🇺🇸 +1</option>
+            <option value="+44">🇬🇧 +44</option>
+            <option value="+90">🇹🇷 +90</option>
+          </select>
+          <input class="fi" id="rp-num" type="tel" placeholder="901234567" maxlength="9" oninput="this.value=this.value.replace(/\D/g,'')" onkeydown="if(event.key==='Enter')sendSms('reg')">
+        </div>
+      </div>
+      <button class="main-btn blue" onclick="sendSms('reg')">SMS kod yuborish →</button>
+    </div>
+  </div>
+
+  <!-- ═══════ SMS KOD ═══════ -->
+  <div id="sms-block" class="step">
+    <button class="back" onclick="backFromSms()">← Orqaga</button>
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:32px;margin-bottom:8px">📱</div>
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800">SMS kod yuborildi</div>
+      <div class="phone-show" id="sms-phone-show">+998901234567</div>
+      <div style="font-size:12px;color:var(--mu)">6 raqamli kodni kiriting</div>
+    </div>
+    <div class="otp-wrap">
+      <input class="otp" id="o1" maxlength="1" oninput="otpNext(this,'o2')" onkeydown="otpDel(event,this,'')">
+      <input class="otp" id="o2" maxlength="1" oninput="otpNext(this,'o3')" onkeydown="otpDel(event,this,'o1')">
+      <input class="otp" id="o3" maxlength="1" oninput="otpNext(this,'o4')" onkeydown="otpDel(event,this,'o2')">
+      <input class="otp" id="o4" maxlength="1" oninput="otpNext(this,'o5')" onkeydown="otpDel(event,this,'o3')">
+      <input class="otp" id="o5" maxlength="1" oninput="otpNext(this,'o6')" onkeydown="otpDel(event,this,'o4')">
+      <input class="otp" id="o6" maxlength="1" oninput="otpAuto()" onkeydown="otpDel(event,this,'o5')">
+    </div>
+    <button class="main-btn blue" onclick="verifySms()">Tasdiqlash ✓</button>
+    <button class="resend" onclick="resendSms()">Kodni qayta yuborish</button>
+  </div>
+
+  <!-- ═══════ PAROLNI TIKLASH ═══════ -->
+  <div id="reset-block" class="step">
+    <button class="back" onclick="showBlock('login-block')">← Orqaga</button>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:32px;margin-bottom:8px">🔑</div>
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800">Parolni tiklash</div>
+      <div style="font-size:12px;color:var(--mu);margin-top:4px">Emailingizga tiklash havolasi yuboriladi</div>
+    </div>
+    <div class="fg"><label class="fl">Email manzil</label><input class="fi" id="reset-email" type="email" placeholder="email@gmail.com" onkeydown="if(event.key==='Enter')sendReset()"></div>
+    <button class="main-btn" onclick="sendReset()">Havola yuborish →</button>
+  </div>
+
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  updateProfile, sendPasswordResetEmail,
+  signInWithPopup, GoogleAuthProvider,
+  RecaptchaVerifier, signInWithPhoneNumber
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCidOdcUAFj_ut6QraRD_o6q7oGCZxzTBo",
+    authDomain: "kall-d863b.firebaseapp.com",
+    projectId: "kall-d863b",
+    storageBucket: "kall-d863b.firebasestorage.app",
+    messagingSenderId: "431974110504",
+    appId: "1:431974110504:web:ed26f567145d3a9e79ec1d",
+    measurementId: "G-NRQDQDZBCY"
+  };
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// Auto redirect if logged in
+onAuthStateChanged(auth, user => {
+  if(user){
+    saveUser(user);
+    window.location.href = 'health-dashboard.html';
+  }
+});
+
+// ── GOOGLE ────────────────────────────────────────────────────
+window.loginGoogle = async () => {
+  try {
+    load('Google bilan kirilmoqda...');
+    const prov = new GoogleAuthProvider();
+    await signInWithPopup(auth, prov);
+  } catch(e){ err(gErr(e.code)); }
+};
+
+// ── EMAIL LOGIN ───────────────────────────────────────────────
+window.loginEmail = async () => {
+  const email = g('le-email').value.trim();
+  const pass  = g('le-pass').value;
+  if(!email||!pass){ err('Email va parolni kiriting!'); return; }
+  try {
+    load('Kirilmoqda...');
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e){ err(eErr(e.code)); }
+};
+
+// ── EMAIL REGISTER ────────────────────────────────────────────
+window.registerEmail = async () => {
+  const name  = g('re-name').value.trim();
+  const email = g('re-email').value.trim();
+  const pass  = g('re-pass').value;
+  const pass2 = g('re-pass2').value;
+  if(!name)          { err('Ismingizni kiriting!'); return; }
+  if(!email)         { err('Email kiriting!'); return; }
+  if(pass.length < 6){ err('Parol kamida 6 ta belgi bo\'lsin!'); return; }
+  if(pass !== pass2) { err('Parollar mos kelmadi!'); return; }
+  try {
+    load("Ro'yxatdan o'tilmoqda...");
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: name });
+    // Save name to settings
+    const sett = JSON.parse(localStorage.getItem('vt-set')||'{}');
+    sett.name = name;
+    localStorage.setItem('vt-set', JSON.stringify(sett));
+  } catch(e){ err(eErr(e.code)); }
+};
+
+// ── FORGOT PASSWORD ───────────────────────────────────────────
+window.sendReset = async () => {
+  const email = g('reset-email').value.trim();
+  if(!email){ err('Email kiriting!'); return; }
+  try {
+    load('Yuborilmoqda...');
+    await sendPasswordResetEmail(auth, email);
+    hideLoad();
+    ok('✅ Tiklash havolasi '+email+' ga yuborildi. Emailni tekshiring!');
+  } catch(e){ err(eErr(e.code)); }
+};
+
+// ── PHONE SMS ─────────────────────────────────────────────────
+let confirmRes = null;
+let smsMode = 'login';
+
+window.sendSms = async (mode) => {
+  smsMode = mode;
+  const codeEl = mode==='login' ? g('lp-country') : g('rp-country');
+  const numEl  = mode==='login' ? g('lp-num')     : g('rp-num');
+  const phone  = codeEl.value + numEl.value.replace(/\D/g,'');
+  if(numEl.value.length < 7){ err('Telefon raqamni to\'liq kiriting!'); return; }
+
+  try {
+    load('SMS yuborilmoqda...');
+    if(window._recap){ window._recap.clear(); window._recap=null; }
+    window._recap = new RecaptchaVerifier(auth,'recaptcha-container',{size:'invisible',callback:()=>{}});
+    confirmRes = await signInWithPhoneNumber(auth, phone, window._recap);
+    hideLoad();
+    g('sms-phone-show').textContent = phone;
+    showBlock('sms-block');
+    ['o1','o2','o3','o4','o5','o6'].forEach(id=>g(id).value='');
+    setTimeout(()=>g('o1').focus(),300);
+  } catch(e){
+    if(window._recap){ window._recap.clear(); window._recap=null; }
+    err(pErr(e.code));
+  }
+};
+
+window.verifySms = async () => {
+  const code = ['o1','o2','o3','o4','o5','o6'].map(id=>g(id).value).join('');
+  if(code.length!==6){ err('6 raqamli kodni kiriting!'); return; }
+  try {
+    load('Tekshirilmoqda...');
+    const cred = await confirmRes.confirm(code);
+    // If register mode, save name
+    if(smsMode==='reg'){
+      const name = g('rp-name').value.trim();
+      if(name){ await updateProfile(cred.user,{displayName:name}); }
+    }
+  } catch(e){ err(sErr(e.code)); }
+};
+
+window.resendSms = async () => {
+  if(window._recap){ window._recap.clear(); window._recap=null; }
+  backFromSms();
+  setTimeout(()=>{ if(smsMode==='login') sendSms('login'); else sendSms('reg'); },500);
+};
+
+// ── SAVE USER ─────────────────────────────────────────────────
+function saveUser(user){
+  localStorage.setItem('vt-user', JSON.stringify({
+    uid:   user.uid,
+    name:  user.displayName || user.phoneNumber || 'Foydalanuvchi',
+    email: user.email||'',
+    phone: user.phoneNumber||'',
+    photo: user.photoURL||''
+  }));
+}
+
+// ── ERROR MESSAGES ────────────────────────────────────────────
+function eErr(c){
+  if(c==='auth/user-not-found')      return '❌ Bu email ro\'yxatda yo\'q. Avval ro\'yxatdan o\'ting.';
+  if(c==='auth/wrong-password')      return '❌ Parol noto\'g\'ri!';
+  if(c==='auth/invalid-credential')  return '❌ Email yoki parol noto\'g\'ri!';
+  if(c==='auth/email-already-in-use')return '❌ Bu email allaqachon ro\'yxatdan o\'tgan!';
+  if(c==='auth/weak-password')       return '❌ Parol juda oddiy. Kamida 6 ta belgi.';
+  if(c==='auth/invalid-email')       return '❌ Email formati noto\'g\'ri!';
+  if(c==='auth/too-many-requests')   return '⚠️ Ko\'p urinish. Biroz kuting.';
+  if(c==='auth/network-request-failed') return '❌ Internet aloqasi yo\'q!';
+  return '❌ Xatolik: '+c;
+}
+function pErr(c){
+  if(c==='auth/invalid-phone-number')   return '❌ Noto\'g\'ri telefon raqam!';
+  if(c==='auth/too-many-requests')      return '⚠️ Ko\'p urinish. Biroz kuting.';
+  if(c==='auth/captcha-check-failed')   return '❌ reCAPTCHA xatosi. Sahifani yangilang.';
+  if(c==='auth/billing-not-enabled')    return '⚠️ Firebase Blaze rejimi kerak (SMS uchun).';
+  return '❌ Xatolik: '+c;
+}
+function sErr(c){
+  if(c==='auth/invalid-verification-code') return '❌ Noto\'g\'ri kod!';
+  if(c==='auth/code-expired')              return '⚠️ Kod muddati o\'tdi. Qayta yuboring.';
+  return '❌ Xatolik: '+c;
+}
+function gErr(c){
+  if(c==='auth/popup-closed-by-user') return '⚠️ Oyna yopildi.';
+  if(c==='auth/popup-blocked')        return '⚠️ Popup bloklangi. Brauzer ruxsat bersin.';
+  return '❌ Xatolik: '+c;
+}
+</script>
+
+<script>
+// ── UI HELPERS ────────────────────────────────────────────────
+const g = id => document.getElementById(id);
+
+function showBlock(id){
+  ['login-block','reg-block','sms-block','reset-block'].forEach(b=>{
+    const el=g(b); if(el){el.classList.remove('on');}
+  });
+  const t=g(id); if(t) t.classList.add('on');
+  g('msg').className='msg';
+}
+
+function switchMain(tab){
+  g('tab-login').classList.toggle('on', tab==='login');
+  g('tab-reg').classList.toggle('on',   tab==='reg');
+  showBlock(tab==='login'?'login-block':'reg-block');
+}
+
+function switchMethod(m){
+  ['ml-email','ml-phone','ml-google'].forEach(id=>{const el=g(id);if(el)el.classList.remove('on');});
+  g('ml-'+m).classList.add('on');
+  g('login-email').classList.toggle('on', m==='email');
+  g('login-phone').classList.toggle('on', m==='phone');
+  if(m==='google') loginGoogle();
+}
+
+function switchRegMethod(m){
+  ['mr-email','mr-phone','mr-google'].forEach(id=>{const el=g(id);if(el)el.classList.remove('on');});
+  g('mr-'+m).classList.add('on');
+  g('reg-email').classList.toggle('on', m==='email');
+  g('reg-phone').classList.toggle('on', m==='phone');
+  if(m==='google') loginGoogle();
+}
+
+function backFromSms(){
+  showBlock(smsMode==='login'?'login-block':'reg-block');
+}
+
+function forgotPass(){
+  const email=g('le-email').value.trim();
+  if(email) g('reset-email').value=email;
+  showBlock('reset-block');
+}
+
+function togglePw(id,btn){
+  const inp=g(id);
+  inp.type=inp.type==='password'?'text':'password';
+  btn.textContent=inp.type==='password'?'👁':'🙈';
+}
+
+// OTP
+function otpNext(el,nextId){
+  if(el.value&&nextId) g(nextId).focus();
+}
+function otpDel(e,el,prevId){
+  if(e.key==='Backspace'&&!el.value&&prevId) g(prevId).focus();
+}
+function otpAuto(){
+  const code=['o1','o2','o3','o4','o5','o6'].map(id=>g(id).value).join('');
+  if(code.length===6) verifySms();
+}
+
+// Loader
+function load(txt){ g('loader-txt').textContent=txt||'Kuting...'; g('loader').classList.add('on'); }
+function hideLoad(){ g('loader').classList.remove('on'); }
+
+// Messages
+function err(txt){ hideLoad(); const m=g('msg'); m.textContent=txt; m.className='msg err'; }
+function ok(txt){ hideLoad(); const m=g('msg'); m.textContent=txt; m.className='msg ok'; }
+
+// Default: login block active
+let smsMode='login';
+</script>
+</body>
+</html>

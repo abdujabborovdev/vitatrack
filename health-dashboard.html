@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VitaTrack — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getAuth,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+const cfg={apiKey:"AIzaSyCidOdcUAFj_ut6QraRD_o6q7oGCZxzTBo",authDomain:"kall-d863b.firebaseapp.com",projectId:"kall-d863b",storageBucket:"kall-d863b.firebasestorage.app",messagingSenderId:"431974110504",appId:"1:431974110504:web:ed26f567145d3a9e79ec1d"};
+const auth=getAuth(initializeApp(cfg));
+onAuthStateChanged(auth,u=>{
+  if(!u){window.location.href='login.html';return;}
+  window._uid=u.uid;
+  const s=JSON.parse(localStorage.getItem('vt-set')||'{}');
+  if(!s.name){s.name=(u.displayName||u.phoneNumber||'Foydalanuvchi').split(' ')[0];localStorage.setItem('vt-set',JSON.stringify(s));}
+  document.getElementById('ld').style.display='none';
+  document.getElementById('app').style.display='grid';
+  if(window._boot)window._boot();
+});
+window._out=async()=>{await signOut(auth);window.location.href='login.html';};
+</script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#0b0b12;color:#eeeef5;min-height:100vh;overflow-x:hidden}
+:root{--bg:#0b0b12;--s1:#111119;--s2:#17171f;--s3:#1e1e28;--bd:#ffffff0a;--bd2:#ffffff15;--tx:#eeeef5;--mu:#606078;--mu2:#9090a0;--gr:#00d68f;--bl:#3d7eff;--pu:#a855f7;--or:#f97316;--ye:#eab308;--re:#ef4444}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+
+/* Loader */
+#ld{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:999}
+.ld-logo{font-size:22px;font-weight:800;color:var(--gr);letter-spacing:-0.5px}.ld-logo span{color:var(--mu);font-weight:400}
+.ld-spin{width:34px;height:34px;border:2.5px solid var(--bd2);border-top-color:var(--gr);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Layout */
+#app{display:none;grid-template-columns:216px 1fr;min-height:100vh}
+
+/* Sidebar */
+.sb{background:var(--s1);border-right:1px solid var(--bd);padding:18px 10px;display:flex;flex-direction:column;gap:1px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sb-logo{font-size:20px;font-weight:800;color:var(--gr);letter-spacing:-0.5px;padding:4px 8px 18px}.sb-logo span{color:var(--mu);font-weight:400}
+.sb-sec{font-size:10px;font-weight:700;color:var(--mu);letter-spacing:1.2px;text-transform:uppercase;padding:12px 10px 5px}
+.nb{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:10px;border:none;background:transparent;color:var(--mu2);font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;width:100%;text-align:left;transition:all .15s}
+.nb:hover{background:var(--s3);color:var(--tx)}.nb.on{background:var(--s3);color:var(--gr);font-weight:600}
+.nb-ic{font-size:15px;width:20px;text-align:center}.nb-lk{margin-left:auto;font-size:10px;opacity:.5}
+.sb-user{margin-top:auto;padding:11px 10px;background:var(--s2);border-radius:12px;border:1px solid var(--bd);display:flex;align-items:center;gap:9px;cursor:pointer;transition:border-color .2s}
+.sb-user:hover{border-color:var(--bd2)}
+.sb-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gr),var(--bl));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#000;flex-shrink:0;overflow:hidden}
+.sb-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.sb-nm{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-pl{font-size:10px;color:var(--mu2);margin-top:1px}
+.sb-out{margin-left:auto;background:none;border:none;color:var(--mu);cursor:pointer;font-size:14px;padding:4px;border-radius:6px;transition:color .15s;flex-shrink:0}
+.sb-out:hover{color:var(--re)}
+
+/* Main */
+.main{padding:28px 30px;overflow-y:auto;display:flex;flex-direction:column;gap:20px}
+
+/* Pages */
+.pg{display:none;flex-direction:column;gap:18px;animation:pgIn .2s ease}.pg.on{display:flex}
+@keyframes pgIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* Header */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ph h1{font-size:23px;font-weight:800;letter-spacing:-.5px}.ph h1 span{color:var(--gr)}
+.ph p{font-size:13px;color:var(--mu2);margin-top:3px}
+.pill{background:var(--s1);border:1px solid var(--bd2);border-radius:20px;padding:7px 14px;font-size:13px;font-weight:700;color:var(--gr);letter-spacing:.5px;white-space:nowrap}
+.pill2{background:var(--s1);border:1px solid var(--bd);border-radius:20px;padding:7px 14px;font-size:12px;color:var(--mu2)}
+
+/* Tip */
+.tip{background:var(--s2);border:1px solid var(--bd);border-radius:13px;padding:11px 15px;display:flex;align-items:center;gap:9px;font-size:13px;color:var(--mu2)}
+
+/* Trial bar */
+.tw{background:#f9731608;border:1px solid #f9731620;border-radius:12px;padding:10px 15px;display:none;align-items:center;justify-content:space-between;gap:10px}
+.tw.on{display:flex}
+
+/* Grids */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.g-sc{display:grid;grid-template-columns:168px 1fr;gap:14px}
+
+/* Card */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:18px}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.ct{font-size:13px;font-weight:700;letter-spacing:-.2px}
+
+/* Badge */
+.bg{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:none;cursor:pointer;font-family:inherit;white-space:nowrap}
+.bg-gr{background:#00d68f12;color:var(--gr)}.bg-bl{background:#3d7eff12;color:var(--bl)}
+.bg-pu{background:#a855f712;color:var(--pu)}.bg-or{background:#f9731612;color:var(--or)}
+.bg-mu{background:var(--s3);color:var(--mu2)}
+
+/* Score ring */
+.sc-card{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;overflow:hidden}
+.sc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gr),var(--bl))}
+.ring{position:relative;width:100px;height:100px}
+.ring svg{transform:rotate(-90deg)}
+.rg-bg{fill:none;stroke:var(--s3);stroke-width:9}
+.rg-fl{fill:none;stroke:var(--gr);stroke-width:9;stroke-linecap:round;stroke-dasharray:283;stroke-dashoffset:283;transition:stroke-dashoffset 1s ease;filter:drop-shadow(0 0 6px var(--gr))}
+.rg-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.rg-n{font-size:28px;font-weight:800;color:var(--gr);letter-spacing:-1px;line-height:1}
+.rg-s{font-size:10px;color:var(--mu)}
+
+/* Stat cards */
+.st{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:16px;cursor:pointer;transition:transform .2s,border-color .2s;position:relative;overflow:hidden}
+.st:hover{transform:translateY(-2px);border-color:var(--bd2)}
+.st::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.st.w::after{background:var(--bl)}.st.s::after{background:var(--pu)}.st.k::after{background:var(--or)}
+.st-ic{font-size:17px;margin-bottom:8px}
+.st-v{font-size:21px;font-weight:800;letter-spacing:-.5px;line-height:1;margin-bottom:3px}
+.st.w .st-v{color:var(--bl)}.st.s .st-v{color:var(--pu)}.st.k .st-v{color:var(--or)}
+.st-nm{font-size:11px;color:var(--mu2);margin-bottom:8px}
+.bar{height:3px;background:var(--s3);border-radius:2px;overflow:hidden}
+.bar-f{height:100%;border-radius:2px;transition:width 1s ease}
+.st.w .bar-f{background:var(--bl)}.st.s .bar-f{background:var(--pu)}.st.k .bar-f{background:var(--or)}
+.st-gl{font-size:10px;color:var(--mu);margin-top:4px}
+
+/* Glasses */
+.glasses{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:9px}
+.glass{aspect-ratio:1;border-radius:9px;border:1.5px solid var(--bd);background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:all .15s}
+.glass:hover{transform:scale(1.08)}.glass.on{border-color:var(--bl);background:#3d7eff10}
+.wn{font-size:24px;font-weight:800;color:var(--bl);letter-spacing:-1px;line-height:1}
+.add-btn{width:100%;padding:8px;border-radius:9px;border:1px dashed #3d7eff25;background:transparent;color:var(--bl);font-size:12px;cursor:pointer;font-family:inherit;transition:all .2s}
+.add-btn:hover{background:#3d7eff08;border-color:var(--bl)}
+
+/* Sleep bars */
+.sl-bars{display:flex;align-items:flex-end;gap:4px;height:60px;margin-bottom:7px}
+.slb-w{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end}
+.slb{width:100%;border-radius:3px 3px 0 0;background:var(--s3);min-height:4px;transition:height 1s ease}
+.slb.on{background:linear-gradient(180deg,var(--pu),#7c3acd)}
+.slb-d{font-size:9px;color:var(--mu)}
+
+/* Cal ring */
+.cr{position:relative;width:76px;height:76px;margin:0 auto 11px}
+.cr svg{transform:rotate(-90deg)}
+.cr-bg{fill:none;stroke:var(--s3);stroke-width:11}
+.cr-fl{fill:none;stroke:var(--or);stroke-width:11;stroke-linecap:round;stroke-dasharray:188;stroke-dashoffset:188;transition:stroke-dashoffset 1s ease;filter:drop-shadow(0 0 5px var(--or))}
+.cr-tx{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.cr-n{font-size:15px;font-weight:800;color:var(--or);letter-spacing:-.5px;line-height:1}
+.cr-s{font-size:9px;color:var(--mu)}
+
+/* Macros */
+.mc{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.mc-nm{font-size:11px;color:var(--mu2);width:65px}
+.mc-bar{flex:1;height:3px;background:var(--s3);border-radius:2px;overflow:hidden}
+.mc-f{height:100%;border-radius:2px;transition:width 1s ease}
+.mc-v{font-size:10px;color:var(--mu);width:26px;text-align:right}
+
+/* Meals */
+.meal{display:flex;align-items:center;gap:9px;padding:9px;background:var(--s2);border-radius:10px;border:1px solid transparent;transition:all .15s;margin-bottom:5px}
+.meal:hover{border-color:var(--bd)}.meal:hover .mal{opacity:1}
+.m-ic{width:30px;height:30px;border-radius:7px;background:#ffffff06;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.m-nm{font-size:13px;font-weight:500}.m-tm{font-size:11px;color:var(--mu)}
+.m-kc{font-size:13px;font-weight:700;color:var(--or);white-space:nowrap}
+.mal{display:flex;gap:2px;opacity:0;transition:opacity .15s}
+.mb{background:none;border:none;cursor:pointer;font-size:12px;padding:4px;border-radius:6px;transition:background .15s}.mb:hover{background:var(--s3)}
+.empty{text-align:center;color:var(--mu);font-size:13px;padding:18px}
+
+/* Weekly */
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.wkc{display:flex;flex-direction:column;align-items:center;gap:4px}
+.wkd{font-size:9px;color:var(--mu);font-weight:700;text-transform:uppercase}
+.wkdot{width:7px;height:7px;border-radius:50%;background:var(--s3)}
+.wkdot.g{background:var(--gr);box-shadow:0 0 5px var(--gr)}
+.wkdot.b{background:var(--bl)}.wkdot.y{background:var(--ye)}.wkdot.r{background:var(--re)}
+.wks{font-size:10px;font-weight:600;color:var(--mu)}
+
+/* Settings */
+.sr{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bd)}
+.sr:last-child{border-bottom:none}
+.sl{font-size:13px}.ss{font-size:11px;color:var(--mu);margin-top:1px}
+.si{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--tx);font-family:inherit;font-size:13px;outline:none;width:82px;text-align:center;transition:border-color .2s}
+.si:focus{border-color:var(--gr)}
+
+/* Profile */
+.prc{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:20px;display:flex;align-items:center;gap:16px}
+.pr-av{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#000;flex-shrink:0;overflow:hidden;cursor:pointer;position:relative}
+.pr-av::after{content:'✏️';position:absolute;bottom:-1px;right:-1px;font-size:12px;background:var(--s1);border-radius:50%;padding:2px}
+
+/* Goal cards */
+.gc{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:18px}
+.gb{height:5px;background:var(--s3);border-radius:3px;overflow:hidden;margin:9px 0}
+.gf{height:100%;border-radius:3px;transition:width 1s ease}
+.gp{font-size:18px;font-weight:800;letter-spacing:-.5px}
+
+/* Pricing */
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.pc{background:var(--s1);border:1px solid var(--bd);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:13px;position:relative;transition:transform .2s}
+.pc:hover{transform:translateY(-2px)}
+.pc.pop{border-color:#3d7eff20;background:linear-gradient(160deg,var(--s1),#0d1320)}
+.pc.prem{border-color:#a855f718;background:linear-gradient(160deg,var(--s1),#11091a)}
+.pop-tag{position:absolute;top:13px;right:13px;background:#3d7eff12;color:var(--bl);font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px}
+.pn{font-size:15px;font-weight:800;letter-spacing:-.3px}
+.pa{font-size:40px;font-weight:800;letter-spacing:-1.5px;line-height:1}
+.pp{font-size:12px;color:var(--mu2)}
+.pfl{display:flex;flex-direction:column;gap:6px;flex:1}
+.pf{display:flex;align-items:center;gap:7px;font-size:12px}.pf.no{opacity:.3;text-decoration:line-through}
+.pck{width:16px;text-align:center;font-size:11px}
+.pbtn{width:100%;padding:11px;border-radius:11px;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.pbtn:hover{opacity:.9;transform:translateY(-1px)}
+.pb-fr{background:var(--s3);color:var(--tx)}.pb-pr{background:var(--bl);color:#fff}
+.pb-pm{background:linear-gradient(135deg,var(--pu),var(--or));color:#fff}
+.ctag{text-align:center;font-size:11px;color:var(--gr);font-weight:600;display:none;margin-top:2px}
+
+/* Modal */
+.mo{display:none;position:fixed;inset:0;background:#00000090;backdrop-filter:blur(8px);z-index:200;align-items:center;justify-content:center;padding:16px}
+.mo.on{display:flex}
+.mbox{background:var(--s1);border:1px solid var(--bd2);border-radius:20px;padding:24px;width:360px;max-height:90vh;overflow-y:auto;animation:mIn .25s cubic-bezier(.34,1.5,.64,1)}
+@keyframes mIn{from{opacity:0;transform:scale(.93) translateY(12px)}to{opacity:1;transform:none}}
+.mt{font-size:16px;font-weight:800;margin-bottom:15px;letter-spacing:-.3px}
+.fg{margin-bottom:11px}
+.fl{font-size:11px;color:var(--mu2);margin-bottom:4px;display:block}
+.fi{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--s2);color:var(--tx);font-family:inherit;font-size:13px;outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--gr)}.fi::placeholder{color:var(--mu)}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.fr3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px}
+.qb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:9px 0}
+.qb{padding:9px;border-radius:9px;background:var(--s2);border:1px solid var(--bd);color:var(--tx);font-family:inherit;font-size:12px;cursor:pointer;text-align:center;transition:all .15s}
+.qb:hover{border-color:var(--bl);color:var(--bl);background:#3d7eff08}
+.brow{display:flex;gap:8px;margin-top:13px}
+.btn{flex:1;padding:10px;border-radius:10px;border:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-p{background:var(--gr);color:#000}.btn-p:hover{opacity:.9}
+.btn-s{background:var(--s2);color:var(--tx)}.btn-s:hover{background:var(--s3)}
+.btn-bl{background:var(--bl);color:#fff}.btn-pu{background:linear-gradient(135deg,var(--pu),var(--or));color:#fff}
+
+/* Toast */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--s1);border:1px solid var(--gr);color:var(--gr);padding:9px 16px;border-radius:11px;font-size:13px;font-weight:500;z-index:999;display:none;animation:tIn .2s ease}
+.toast.on{display:block}@keyframes tIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+/* Trial expired */
+.texp{display:none;position:fixed;inset:0;z-index:300;background:#00000096;backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:16px}
+.texp.on{display:flex}
+
+/* Plan badge */
+.plb{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.pb-0{background:var(--s3);color:var(--mu2)}.pb-1{background:#3d7eff12;color:var(--bl)}.pb-2{background:linear-gradient(135deg,#a855f712,#f9731612);color:var(--pu)}
+
+/* BMI */
+.bmi-n{font-size:42px;font-weight:800;letter-spacing:-1.5px;line-height:1}
+/* Sleep dur */
+.sl-dur{font-size:42px;font-weight:800;color:var(--pu);letter-spacing:-1.5px;line-height:1}
+</style>
+</head>
+<body>
+<div id="ld"><div class="ld-logo">Vita<span>Track</span></div><div class="ld-spin"></div></div>
+
+<div id="app">
+<!-- SIDEBAR -->
+<aside class="sb" id="sb">
+  <div class="sb-logo">Vita<span>Track</span></div>
+  <div class="sb-sec">Asosiy</div>
+  <button class="nb on" onclick="nav('dashboard',this)"><span class="nb-ic">📊</span>Dashboard</button>
+  <button class="nb" onclick="nav('ovqatlar',this)"><span class="nb-ic">🥗</span>Ovqatlar</button>
+  <button class="nb" onclick="nav('suv',this)"><span class="nb-ic">💧</span>Suv</button>
+  <button class="nb" onclick="nav('uyqu',this)"><span class="nb-ic">😴</span>Uyqu</button>
+  <div class="sb-sec">Tahlil</div>
+  <button class="nb" onclick="nav('statistika',this)"><span class="nb-ic">📈</span>Statistika<span class="nb-lk" id="lk-s"></span></button>
+  <button class="nb" onclick="nav('maqsadlar',this)"><span class="nb-ic">🎯</span>Maqsadlar</button>
+  <div class="sb-sec">Hisob</div>
+  <button class="nb" onclick="nav('planlar',this)"><span class="nb-ic">💎</span>Planlar</button>
+  <button class="nb" onclick="nav('sozlamalar',this)"><span class="nb-ic">⚙️</span>Sozlamalar</button>
+  <div class="sb-user" onclick="nav('sozlamalar',null)">
+    <div class="sb-av" id="sb-av">A</div>
+    <div style="flex:1;min-width:0">
+      <div class="sb-nm" id="sb-nm">Foydalanuvchi</div>
+      <div id="sb-pl" class="plb pb-0">Bepul</div>
+    </div>
+    <button class="sb-out" onclick="event.stopPropagation();if(confirm('Chiqasizmi?'))_out()" title="Chiqish">⏻</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- DASHBOARD -->
+<div class="pg on" id="pg-dashboard">
+  <div class="ph">
+    <div><h1 id="gr-h">Xayrli kun <span>☀️</span></h1><p id="gr-s">Bugun sog'lom bo'ling!</p></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <div class="pill" id="clock">00:00:00</div>
+      <div class="pill2" id="datep">📅 ...</div>
+    </div>
+  </div>
+  <div class="tip"><span id="tip-i">💡</span>&nbsp;<span id="tip-t">...</span></div>
+  <div class="tw" id="tw"><span style="font-size:13px;color:var(--or)"><b>⏰</b> <span id="tw-t">3 kun qoldi</span></span><button onclick="nav('planlar',null)" style="background:var(--or);color:#000;border:none;padding:5px 11px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">To'lash →</button></div>
+  <div class="g-sc">
+    <div class="sc-card">
+      <div class="ring">
+        <svg width="100" height="100" viewBox="0 0 100 100"><circle class="rg-bg" cx="50" cy="50" r="45"/><circle class="rg-fl" id="rg" cx="50" cy="50" r="45"/></svg>
+        <div class="rg-num"><div class="rg-n" id="sc-n">0</div><div class="rg-s">/100</div></div>
+      </div>
+      <div style="font-size:13px;font-weight:700">Sog'liq Balli</div>
+      <div style="font-size:11px;color:var(--mu2);text-align:center" id="sc-m">...</div>
+    </div>
+    <div class="g3">
+      <div class="st w" onclick="nav('suv',null)"><div class="st-ic">💧</div><div class="st-v" id="st-w">0L</div><div class="st-nm">Suv ichildi</div><div class="bar"><div class="bar-f" id="pb-w" style="width:0%"></div></div><div class="st-gl" id="gl-w">Maqsad: 2.5L</div></div>
+      <div class="st s" onclick="nav('uyqu',null)"><div class="st-ic">😴</div><div class="st-v" id="st-s">—</div><div class="st-nm">Uyqu</div><div class="bar"><div class="bar-f" id="pb-s" style="width:0%"></div></div><div class="st-gl" id="gl-s">Maqsad: 8s</div></div>
+      <div class="st k" onclick="nav('ovqatlar',null)"><div class="st-ic">🔥</div><div class="st-v" id="st-k">0</div><div class="st-nm">Kaloriya</div><div class="bar"><div class="bar-f" id="pb-k" style="width:0%"></div></div><div class="st-gl" id="gl-k">Maqsad: 2200</div></div>
+    </div>
+  </div>
+  <div class="g3">
+    <div class="card"><div class="ch"><div class="ct">💧 Suv</div><span class="bg bg-bl" id="gl-b1">0/10</span></div>
+      <div class="glasses" id="g1"></div>
+      <div style="text-align:center;margin:5px 0"><span class="wn" id="wl">0.0</span><span style="font-size:12px;color:var(--mu2)"> L / <span id="wgl">2.5</span>L</span></div>
+      <button class="add-btn" onclick="addGlass()">+ Stakan qo'shish</button>
+    </div>
+    <div class="card"><div class="ch"><div class="ct">😴 Haftalik uyqu</div><span class="bg bg-pu" id="sl-av">O'rt: —</span></div>
+      <div class="sl-bars" id="slc1"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-size:21px;font-weight:800;color:var(--pu);letter-spacing:-.5px" id="sl-last">—</div><div style="font-size:11px;color:var(--mu2)">Bu kecha</div></div>
+        <div style="font-size:11px;color:var(--mu2);text-align:right;line-height:1.7" id="sl-tm">😴 —<br>⏰ —</div>
+      </div>
+    </div>
+    <div class="card"><div class="ch"><div class="ct">🔥 Kaloriya</div><span class="bg bg-or" id="kp">0%</span></div>
+      <div class="cr"><svg width="76" height="76" viewBox="0 0 76 76"><circle class="cr-bg" cx="38" cy="38" r="30"/><circle class="cr-fl" id="cr1" cx="38" cy="38" r="30"/></svg><div class="cr-tx"><div class="cr-n" id="cr-n">0</div><div class="cr-s">kcal</div></div></div>
+      <div class="mc"><div class="mc-nm">Uglevodlar</div><div class="mc-bar"><div class="mc-f" id="mc-c" style="width:0%;background:var(--ye)"></div></div><div class="mc-v" id="mv-c">0g</div></div>
+      <div class="mc"><div class="mc-nm">Oqsil</div><div class="mc-bar"><div class="mc-f" id="mc-p" style="width:0%;background:var(--or)"></div></div><div class="mc-v" id="mv-p">0g</div></div>
+      <div class="mc"><div class="mc-nm">Yog'</div><div class="mc-bar"><div class="mc-f" id="mc-f" style="width:0%;background:#ff4d8c"></div></div><div class="mc-v" id="mv-f">0g</div></div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ch"><div class="ct">🥗 Bugungi ovqatlar</div><button class="bg bg-gr" onclick="openFoodMo()" style="border:none;cursor:pointer">+ Qo'shish</button></div><div id="ml1"><div class="empty">Hali ovqat qo'shilmagan</div></div></div>
+    <div class="card"><div class="ch"><div class="ct">📅 Haftalik</div></div><div class="wk" id="wkg1"></div></div>
+  </div>
+</div>
+
+<!-- OVQATLAR -->
+<div class="pg" id="pg-ovqatlar">
+  <div class="ph"><div><h1>🥗 <span>Ovqatlar</span></h1></div><button class="bg bg-gr" onclick="openFoodMo()" style="border:none;padding:9px 15px;font-size:13px;cursor:pointer">+ Ovqat qo'shish</button></div>
+  <div class="g2">
+    <div class="card"><div class="ch"><div class="ct">📊 Xulosa</div></div>
+      <div class="g2"><div style="background:var(--s2);border-radius:11px;padding:13px;text-align:center"><div style="font-size:21px;font-weight:800;color:var(--or);letter-spacing:-.5px" id="ov-k">0</div><div style="font-size:11px;color:var(--mu2)">kcal</div></div>
+      <div style="background:var(--s2);border-radius:11px;padding:13px;text-align:center"><div style="font-size:21px;font-weight:800;color:var(--gr);letter-spacing:-.5px" id="ov-r">2200</div><div style="font-size:11px;color:var(--mu2)">qoldi</div></div></div>
+      <div class="g2" style="margin-top:9px"><div style="background:var(--s2);border-radius:11px;padding:11px;text-align:center"><div style="font-size:17px;font-weight:800;color:var(--bl);letter-spacing:-.3px" id="ov-p">0g</div><div style="font-size:11px;color:var(--mu2)">Oqsil</div></div>
+      <div style="background:var(--s2);border-radius:11px;padding:11px;text-align:center"><div style="font-size:17px;font-weight:800;color:var(--ye);letter-spacing:-.3px" id="ov-c">0g</div><div style="font-size:11px;color:var(--mu2)">Uglevodlar</div></div></div>
+    </div>
+    <div class="card"><div class="ch"><div class="ct">🔥 Progress</div></div>
+      <div class="cr" style="width:96px;height:96px;margin:8px auto 13px"><svg width="96" height="96" viewBox="0 0 96 96"><circle class="cr-bg" cx="48" cy="48" r="38" stroke-width="13"/><circle class="cr-fl" id="cr2" cx="48" cy="48" r="38" stroke-width="13" stroke-dasharray="239" stroke-dashoffset="239"/></svg><div class="cr-tx"><div class="cr-n" id="cr-n2" style="font-size:18px">0</div><div class="cr-s">kcal</div></div></div>
+      <div class="bar" style="height:5px;border-radius:3px"><div id="kb" style="height:100%;background:var(--or);width:0%;border-radius:3px;transition:width 1s ease"></div></div>
+      <div style="font-size:11px;color:var(--mu2);text-align:center;margin-top:5px" id="ks">0%</div>
+    </div>
+  </div>
+  <div class="card"><div class="ch"><div class="ct">📋 Ovqat ro'yxati</div><span class="bg bg-or" id="mc">0 ta</span></div><div id="ml2"><div class="empty">Hali ovqat qo'shilmagan</div></div></div>
+</div>
+
+<!-- SUV -->
+<div class="pg" id="pg-suv">
+  <div class="ph"><div><h1>💧 <span>Suv kuzatuvi</span></h1></div><button class="bg bg-bl" onclick="openMo('mo-w')" style="border:none;padding:9px 15px;font-size:13px;cursor:pointer">+ Qo'shish</button></div>
+  <div class="g2">
+    <div class="card" style="text-align:center">
+      <div style="font-size:54px;font-weight:800;color:var(--bl);letter-spacing:-2px" id="bw">0.0L</div>
+      <div style="color:var(--mu2);font-size:13px;margin-bottom:11px">/ <span id="bwg">2.5</span>L maqsad</div>
+      <div class="bar" style="height:7px;border-radius:4px"><div id="bwb" style="height:100%;background:var(--bl);width:0%;border-radius:4px;transition:width 1s ease"></div></div>
+      <div style="font-size:12px;color:var(--mu2);margin-top:5px" id="bwp">0%</div>
+      <div class="qb-grid" style="margin-top:14px">
+        <button class="qb" onclick="addW(150)">150ml</button>
+        <button class="qb" onclick="addW(250)">250ml</button>
+        <button class="qb" onclick="addW(500)">500ml</button>
+      </div>
+    </div>
+    <div class="card"><div class="ch"><div class="ct">🫙 Stakanlar</div><span class="bg bg-bl" id="gl-b2">0/10</span></div>
+      <div class="glasses" id="g2"></div>
+      <button class="add-btn" style="margin-top:9px" onclick="addGlass()">+ Stakan (250ml)</button>
+    </div>
+  </div>
+</div>
+
+<!-- UYQU -->
+<div class="pg" id="pg-uyqu">
+  <div class="ph"><div><h1>😴 <span>Uyqu kuzatuvi</span></h1></div></div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct" style="margin-bottom:15px">⏰ Uyqu vaqtini kiriting</div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">😴 Yotgan vaqt</label><input class="fi" id="sl-st" type="time" value="23:00" oninput="calcSleep()"></div>
+        <div class="fg"><label class="fl">⏰ Turgan vaqt</label><input class="fi" id="sl-en" type="time" value="07:00" oninput="calcSleep()"></div>
+      </div>
+      <div style="text-align:center;background:var(--s2);border-radius:13px;padding:15px;border:1px solid #a855f712">
+        <div style="font-size:11px;color:var(--mu2);margin-bottom:4px">Davomiylik</div>
+        <div class="sl-dur" id="sl-dur">8:00</div>
+        <div style="display:inline-block;background:#a855f712;color:var(--pu);font-size:11px;padding:3px 9px;border-radius:20px;margin-top:5px" id="sl-q">👍 Yaxshi!</div>
+      </div>
+      <div class="g3" style="margin-top:11px">
+        <div style="background:var(--s2);border-radius:9px;padding:9px;text-align:center"><div style="font-size:10px;color:var(--mu2)">Chuqur</div><div style="font-size:13px;font-weight:700;color:var(--pu)" id="sl-d">2:00</div></div>
+        <div style="background:var(--s2);border-radius:9px;padding:9px;text-align:center"><div style="font-size:10px;color:var(--mu2)">REM</div><div style="font-size:13px;font-weight:700;color:var(--pu)" id="sl-r">1:36</div></div>
+        <div style="background:var(--s2);border-radius:9px;padding:9px;text-align:center"><div style="font-size:10px;color:var(--mu2)">Yengil</div><div style="font-size:13px;font-weight:700;color:var(--pu)" id="sl-l">4:24</div></div>
+      </div>
+      <button onclick="saveSleep()" style="width:100%;margin-top:13px;padding:11px;border-radius:11px;border:none;background:var(--pu);color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer">💾 Saqlash</button>
+    </div>
+    <div class="card"><div class="ch"><div class="ct">📊 Haftalik grafik</div><span class="bg bg-pu" id="sl-av2">O'rt: —</span></div>
+      <div class="sl-bars" id="slc2" style="height:88px"></div>
+      <div class="g3" style="margin-top:11px">
+        <div style="background:var(--s2);border-radius:9px;padding:9px;text-align:center"><div style="font-size:10px;color:var(--mu2)">Eng yaxshi</div><div style="font-size:13px;font-weight:700;color:var(--gr)" id="sl-be">—</div></div>
+        <div style="background:var(--s2);border-radius:9px;padding:9px;text-align:center"><div style="font-size:10px;color:var(--mu2)">O'rtacha</div><div style="font-size:13px;font-weight:700;color:var(--pu)" id="sl-av-v">—</div></div>
+        <div style="background:var(--s2);border-radius:9px;padding:9px;text-align:center"><div style="font-size:10px;color:var(--mu2)">Maqsad</div><div style="font-size:13px;font-weight:700;color:var(--bl)" id="sl-gl">8:00</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATISTIKA -->
+<div class="pg" id="pg-statistika">
+  <div class="ph"><div><h1>📈 <span>Statistika</span></h1></div></div>
+  <div id="st-lock" style="display:none;background:linear-gradient(135deg,#3d7eff08,#a855f708);border:1px solid #3d7eff20;border-radius:15px;padding:22px;text-align:center">
+    <div style="font-size:30px;margin-bottom:8px">🔒</div><div style="font-size:17px;font-weight:800;margin-bottom:5px">Pro plan kerak</div>
+    <div style="font-size:13px;color:var(--mu2);margin-bottom:14px">Statistika faqat Pro/Pro+ foydalanuvchilar uchun</div>
+    <button onclick="nav('planlar',null)" style="background:var(--bl);color:#fff;border:none;padding:9px 20px;border-radius:10px;font-family:inherit;font-weight:700;cursor:pointer">💎 Yuksaltirish</button>
+  </div>
+  <div id="st-cont">
+    <div class="g3">
+      <div class="card" style="text-align:center"><div style="font-size:26px;margin-bottom:5px">💧</div><div style="font-size:24px;font-weight:800;color:var(--bl);letter-spacing:-.5px" id="ss-w">—</div><div style="font-size:11px;color:var(--mu2)">Bugungi suv</div></div>
+      <div class="card" style="text-align:center"><div style="font-size:26px;margin-bottom:5px">😴</div><div style="font-size:24px;font-weight:800;color:var(--pu);letter-spacing:-.5px" id="ss-s">—</div><div style="font-size:11px;color:var(--mu2)">O'rtacha uyqu</div></div>
+      <div class="card" style="text-align:center"><div style="font-size:26px;margin-bottom:5px">🔥</div><div style="font-size:24px;font-weight:800;color:var(--or);letter-spacing:-.5px" id="ss-k">—</div><div style="font-size:11px;color:var(--mu2)">Bugungi kaloriya</div></div>
+    </div>
+    <div class="card"><div class="ch"><div class="ct">📅 Haftalik ball</div></div><div class="wk" id="wkg2"></div></div>
+  </div>
+</div>
+
+<!-- MAQSADLAR -->
+<div class="pg" id="pg-maqsadlar">
+  <div class="ph"><div><h1>🎯 <span>Maqsadlar</span></h1></div></div>
+  <div class="g2" id="goals"></div>
+</div>
+
+<!-- PLANLAR -->
+<div class="pg" id="pg-planlar">
+  <div class="ph"><div><h1>💎 <span>Planlar</span></h1><p>O'zingizga mos rejani tanlang</p></div></div>
+  <div style="background:linear-gradient(135deg,#00d68f08,#3d7eff06);border:1px solid #00d68f18;border-radius:13px;padding:13px 16px;font-size:13px;color:var(--mu2)">🎁 Yangi foydalanuvchilar uchun <b style="color:var(--gr)">7 kun bepul Pro sinov!</b></div>
+  <div class="price-grid">
+    <div class="pc"><div class="pn">🆓 Bepul</div>
+      <div><div class="pa" style="color:var(--tx)">$0</div><div class="pp">/ oyiga</div></div>
+      <div class="pfl"><div class="pf"><span class="pck">✅</span>Dashboard</div><div class="pf"><span class="pck">✅</span>Suv kuzatuvi</div><div class="pf"><span class="pck">✅</span>5 ta ovqat/kun</div><div class="pf"><span class="pck">✅</span>Asosiy uyqu</div><div class="pf no"><span class="pck">—</span>Statistika</div><div class="pf no"><span class="pck">—</span>Cheksiz ovqat</div><div class="pf no"><span class="pck">—</span>BMI tahlil</div></div>
+      <button class="pbtn pb-fr" onclick="selectPlan('free')" id="pb-fr">Tanlash</button><div class="ctag" id="ct-fr">✓ Joriy plan</div>
+    </div>
+    <div class="pc pop"><div class="pop-tag">⭐ Ommabop</div>
+      <div class="pn" style="color:var(--bl)">⚡ Pro</div>
+      <div><div class="pa" style="color:var(--bl)">$10</div><div class="pp">/ oyiga</div></div>
+      <div class="pfl"><div class="pf"><span class="pck">✅</span>Barcha bepul</div><div class="pf"><span class="pck">✅</span>Cheksiz ovqat</div><div class="pf"><span class="pck">✅</span>Statistika</div><div class="pf"><span class="pck">✅</span>BMI tahlil</div><div class="pf"><span class="pck">✅</span>Haftalik hisobot</div><div class="pf no"><span class="pck">—</span>AI maslahat</div></div>
+      <button class="pbtn pb-pr" onclick="selectPlan('pro')" id="pb-pr">7 kun bepul</button><div class="ctag" id="ct-pr">✓ Joriy plan</div>
+    </div>
+    <div class="pc prem">
+      <div class="pn" style="color:var(--pu)">🚀 Pro+</div>
+      <div><div class="pa" style="background:linear-gradient(135deg,var(--pu),var(--or));-webkit-background-clip:text;-webkit-text-fill-color:transparent">$15</div><div class="pp">/ oyiga</div></div>
+      <div class="pfl"><div class="pf"><span class="pck">✅</span>Barcha Pro</div><div class="pf"><span class="pck">✅</span>AI maslahat</div><div class="pf"><span class="pck">✅</span>Export PDF/Excel</div><div class="pf"><span class="pck">✅</span>Oila (3 kishi)</div><div class="pf"><span class="pck">✅</span>Ustuvor yordam</div></div>
+      <button class="pbtn pb-pm" onclick="selectPlan('proplus')" id="pb-pm">7 kun bepul</button><div class="ctag" id="ct-pm">✓ Joriy plan</div>
+    </div>
+  </div>
+</div>
+
+<!-- SOZLAMALAR -->
+<div class="pg" id="pg-sozlamalar">
+  <div class="ph"><div><h1>⚙️ <span>Sozlamalar</span></h1></div></div>
+  <div class="prc">
+    <div class="pr-av" id="pr-av" onclick="openMo('mo-pr')" style="background:linear-gradient(135deg,var(--gr),var(--bl))">A</div>
+    <div style="flex:1"><div style="font-size:17px;font-weight:800;letter-spacing:-.3px" id="pr-nm">Foydalanuvchi</div>
+      <div style="font-size:12px;color:var(--mu2);margin-top:2px" id="pr-gl">Maqsad: Sog'lom hayot</div>
+      <div id="pr-pl" class="plb pb-0" style="margin-top:5px">Bepul</div>
+    </div>
+    <button class="bg bg-gr" onclick="openMo('mo-pr')" style="border:none;cursor:pointer">✏️ Tahrirlash</button>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ct" style="margin-bottom:13px">🎯 Kunlik maqsadlar</div>
+      <div class="sr"><div><div class="sl">💧 Suv (L)</div><div class="ss">Litr/kun</div></div><input class="si" id="si-w" type="number" value="2.5" min="1" max="6" step=".5" onchange="saveSett()"></div>
+      <div class="sr"><div><div class="sl">😴 Uyqu (soat)</div><div class="ss">Soat/kun</div></div><input class="si" id="si-s" type="number" value="8" min="5" max="12" step=".5" onchange="saveSett()"></div>
+      <div class="sr"><div><div class="sl">🔥 Kaloriya</div><div class="ss">kcal/kun</div></div><input class="si" id="si-k" type="number" value="2200" min="1200" max="5000" step="100" onchange="saveSett()"></div>
+    </div>
+    <div class="card"><div class="ct" style="margin-bottom:13px">👤 Shaxsiy</div>
+      <div class="sr"><div><div class="sl">⚖️ Vazn (kg)</div></div><input class="si" id="si-wt" type="number" placeholder="70" onchange="saveSett()"></div>
+      <div class="sr"><div><div class="sl">📏 Bo'y (sm)</div></div><input class="si" id="si-h" type="number" placeholder="175" onchange="saveSett()"></div>
+      <div class="sr"><div><div class="sl">🎂 Yosh</div></div><input class="si" id="si-a" type="number" placeholder="25" onchange="saveSett()"></div>
+    </div>
+    <div class="card" id="bmi-card"><div class="ct" style="margin-bottom:13px">📊 BMI</div>
+      <div id="bmi-lk" style="display:none;text-align:center;padding:12px"><div style="font-size:22px">🔒</div><div style="font-size:12px;color:var(--mu2);margin:5px 0">Pro plan kerak</div><button onclick="nav('planlar',null)" style="background:var(--bl);color:#fff;border:none;padding:6px 13px;border-radius:9px;cursor:pointer;font-size:12px;font-family:inherit">Yuksaltirish</button></div>
+      <div id="bmi-ct"><div style="text-align:center;padding:8px"><div class="bmi-n" id="bmi-n">—</div><div style="font-size:13px;color:var(--mu2);margin-top:4px" id="bmi-s">Vazn va bo'yni kiriting</div></div></div>
+    </div>
+    <div class="card" style="border-color:#ef444420"><div class="ct" style="margin-bottom:11px;color:var(--re)">⚠️ Ma'lumotlar</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-s" onclick="clearToday()" style="font-size:12px">🗑️ Bugungi</button>
+        <button class="btn btn-s" onclick="clearAll()" style="font-size:12px;color:var(--re)">⚠️ Hammasi</button>
+      </div>
+    </div>
+    <div class="card"><div class="ct" style="margin-bottom:11px">💎 Joriy plan</div>
+      <div id="pl-info"></div>
+      <button onclick="nav('planlar',null)" style="width:100%;margin-top:11px;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--bl),var(--pu));color:#fff;font-family:inherit;font-weight:700;cursor:pointer;font-size:13px">💎 Yuksaltirish</button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- MODALS -->
+<div class="mo" id="mo-food">
+  <div class="mbox">
+    <div class="mt" id="fm-t">🥗 Ovqat qo'shish</div>
+    <div id="fm-lim" style="display:none;background:#f9731610;border:1px solid #f9731620;border-radius:9px;padding:9px 12px;font-size:12px;color:var(--or);margin-bottom:11px">⚠️ Bepul: 5 ta limit. <button onclick="nav('planlar',null);closeMo('mo-food')" style="background:none;border:none;color:var(--bl);cursor:pointer;text-decoration:underline">Pro olish</button></div>
+    <div class="fg"><label class="fl">Ovqat nomi</label><input class="fi" id="fn" placeholder="Palov, Salat..."></div>
+    <div class="fr2"><div class="fg"><label class="fl">Kaloriya</label><input class="fi" id="fc" type="number" placeholder="450"></div><div class="fg"><label class="fl">Vaqt</label><input class="fi" id="ft" type="time"></div></div>
+    <div class="fr2"><div class="fg"><label class="fl">Oqsil (g)</label><input class="fi" id="fp" type="number" placeholder="25"></div><div class="fg"><label class="fl">Uglevodlar (g)</label><input class="fi" id="fb" type="number" placeholder="60"></div></div>
+    <div class="fg"><label class="fl">Yog' (g)</label><input class="fi" id="ff" type="number" placeholder="15"></div>
+    <div class="brow"><button class="btn btn-s" onclick="closeMo('mo-food')">Bekor</button><button class="btn btn-p" id="fm-btn" onclick="addFood()">Qo'shish 🔥</button></div>
+  </div>
+</div>
+
+<div class="mo" id="mo-w">
+  <div class="mbox">
+    <div class="mt">💧 Suv qo'shish</div>
+    <div class="qb-grid">
+      <button class="qb" onclick="addW(150);closeMo('mo-w')">150ml</button>
+      <button class="qb" onclick="addW(250);closeMo('mo-w')">250ml</button>
+      <button class="qb" onclick="addW(500);closeMo('mo-w')">500ml</button>
+    </div>
+    <div class="fg"><label class="fl">Yoki o'z miqdoringiz (ml)</label><input class="fi" id="cw" type="number" placeholder="300"></div>
+    <div class="brow"><button class="btn btn-s" onclick="closeMo('mo-w')">Bekor</button><button class="btn btn-bl" onclick="addWcustom()">Qo'shish 💧</button></div>
+  </div>
+</div>
+
+<div class="mo" id="mo-pr">
+  <div class="mbox">
+    <div class="mt">👤 Profil</div>
+    <div class="fg"><label class="fl">Ism</label><input class="fi" id="pi-n" placeholder="Ismingiz"></div>
+    <div class="fg"><label class="fl">Maqsad</label><select class="fi" id="pi-g"><option>Sog'lom hayot</option><option>Vazn kamaytirish</option><option>Vazn oshirish</option><option>Mushak oshirish</option><option>Energiya oshirish</option></select></div>
+    <div class="brow"><button class="btn btn-s" onclick="closeMo('mo-pr')">Bekor</button><button class="btn btn-p" onclick="saveProfile()">Saqlash ✅</button></div>
+  </div>
+</div>
+
+<div class="mo" id="mo-pay">
+  <div class="mbox">
+    <div class="mt" id="pay-t">💳 To'lov</div>
+    <div style="background:var(--s2);border-radius:11px;padding:13px;margin-bottom:14px;text-align:center">
+      <div style="font-size:11px;color:var(--mu2)">Tanlangan plan</div>
+      <div style="font-size:19px;font-weight:800;color:var(--bl);letter-spacing:-.3px" id="pay-pn">Pro — $10/oy</div>
+      <div style="font-size:11px;color:var(--gr);margin-top:3px">🎁 Birinchi 7 kun BEPUL</div>
+    </div>
+    <div class="fg"><label class="fl">Karta raqami</label><input class="fi" id="pay-card" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)"></div>
+    <div class="fr3"><div class="fg"><label class="fl">Muddat</label><input class="fi" id="pay-exp" placeholder="MM/YY" maxlength="5"></div><div class="fg"><label class="fl">CVV</label><input class="fi" id="pay-cvv" placeholder="123" maxlength="3" type="password"></div><div class="fg"><label class="fl">Ism</label><input class="fi" id="pay-nm" placeholder="NAME"></div></div>
+    <div style="font-size:11px;color:var(--mu);text-align:center;margin-top:5px">🔒 256-bit SSL himoya</div>
+    <div class="brow"><button class="btn btn-s" onclick="closeMo('mo-pay')">Bekor</button><button class="btn btn-pu" id="pay-btn" onclick="processPay()">7 kun bepul 🚀</button></div>
+  </div>
+</div>
+
+<div class="texp" id="texp">
+  <div class="mbox" style="text-align:center;max-width:380px">
+    <div style="font-size:40px;margin-bottom:9px">⏰</div>
+    <div style="font-size:19px;font-weight:800;margin-bottom:5px;letter-spacing:-.3px">Sinov muddati tugadi!</div>
+    <div style="font-size:13px;color:var(--mu2);margin-bottom:18px;line-height:1.7">7 kunlik bepul sinov tugadi.<br>Davom etish uchun to'lov qiling.</div>
+    <div style="background:var(--s2);border-radius:11px;padding:13px;margin-bottom:16px">
+      <div style="font-size:18px;font-weight:800;color:var(--bl);letter-spacing:-.3px" id="texp-pn">Pro — $10/oy</div>
+    </div>
+    <div class="fg" style="text-align:left"><label class="fl">💳 Karta raqami</label><input class="fi" id="texp-c" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)"></div>
+    <div class="fr3" style="text-align:left"><div class="fg"><label class="fl">Muddat</label><input class="fi" id="texp-e" placeholder="MM/YY" maxlength="5"></div><div class="fg"><label class="fl">CVV</label><input class="fi" id="texp-cv" placeholder="123" maxlength="3" type="password"></div><div class="fg"><label class="fl">Ism</label><input class="fi" id="texp-n" placeholder="NAME"></div></div>
+    <button id="texp-btn" onclick="payTrial()" style="width:100%;padding:12px;border-radius:11px;border:none;background:linear-gradient(135deg,var(--bl),var(--pu));color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:9px">To'lash va davom etish 💳</button>
+    <button onclick="document.getElementById('texp').classList.remove('on');nav('planlar',null)" style="width:100%;padding:9px;border-radius:11px;border:1px solid var(--bd);background:transparent;color:var(--mu2);font-family:inherit;font-size:13px;cursor:pointer">Boshqa plan tanlash</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── CONSTANTS ───────────────────────────────────────────────
+const DAYS=['Yakshanba','Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba'];
+const MONTHS=['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'];
+const SDS=['Ya','Du','Se','Ch','Pa','Ju','Sh'];
+const ICS=['🍜','🥘','🍱','🥙','🍛','🥗','🫕','🍝','🥞','🍳'];
+const TIPS=[
+  {i:'💡',t:'<b>Maslahat:</b> Nonushta oldidan 1 stakan suv modda almashinuvini tezlashtiradi!'},
+  {i:'😴',t:'<b>Uyqu:</b> Har kuni bir vaqtda uxlash uyqu sifatini yaxshilaydi.'},
+  {i:'🥦',t:'<b>Ovqat:</b> 5 xil rang sabzavot immunitetni kuchaytiradi!'},
+  {i:'🚶',t:'<b>Harakat:</b> Har soatda 5 daqiqa yuring — energiya oshadi.'},
+  {i:'🌞',t:'<b>D Vitamini:</b> 15 daqiqa quyosh nuri kayfiyatni yaxshilaydi.'},
+  {i:'🧘',t:'<b>Stress:</b> 3 daqiqa chuqur nafas olish kortizolni kamaytiradi.'},
+  {i:'💪',t:'<b>Oqsil:</b> Nonushtada oqsil iste\'mol qiling — tushgacha to\'q bo\'lasiz.'},
+  {i:'🍵',t:'<b>Kechqurun:</b> Uxlashdan 1 soat oldin ekrandan uzoq bo\'ling.'},
+];
+
+// ─── STATE ───────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const p2 = n => String(n).padStart(2,'0');
+const dk = () => { const d=new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; };
+
+let D = {}, SH = [], SETT = {}, PLAN = {};
+
+function loadState(){
+  const defD = {date:dk(),waterMl:0,glasses:0,kcal:0,protein:0,carbs:0,fat:0,meals:[]};
+  const defS = {waterGoal:2500,sleepGoal:8,kcalGoal:2200,name:'Foydalanuvchi',goal:"Sog'lom hayot",weight:0,height:0,age:0};
+  const defP = {type:'free',paid:false,trialPlan:null,trialStart:null};
+  SETT = JSON.parse(localStorage.getItem('vt-set')||'null') || defS;
+  PLAN = JSON.parse(localStorage.getItem('vt-plan')||'null') || defP;
+  SH = JSON.parse(localStorage.getItem('vt-sh')||'[]');
+  const saved = JSON.parse(localStorage.getItem('vt-d')||'null');
+  if(saved && saved.date !== dk()){
+    let arch = JSON.parse(localStorage.getItem('vt-arch')||'[]');
+    arch.push(saved); if(arch.length>30) arch=arch.slice(-30);
+    localStorage.setItem('vt-arch',JSON.stringify(arch));
+    localStorage.removeItem('vt-d'); D=defD;
+  } else { D = saved || defD; }
+}
+const saveD = () => localStorage.setItem('vt-d',JSON.stringify(D));
+const saveSH = () => localStorage.setItem('vt-sh',JSON.stringify(SH.slice(-14)));
+const saveSETT = () => localStorage.setItem('vt-set',JSON.stringify(SETT));
+const savePLAN = () => localStorage.setItem('vt-plan',JSON.stringify(PLAN));
+
+// ─── PLAN ────────────────────────────────────────────────────
+function trialLeft(){
+  if(!PLAN.trialStart||!PLAN.trialPlan||PLAN.trialPlan==='free') return 0;
+  return Math.max(0, 7-Math.floor((Date.now()-PLAN.trialStart)/86400000));
+}
+function trialExpired(){ return !PLAN.paid && PLAN.trialPlan && PLAN.trialPlan!=='free' && trialLeft()<=0; }
+function planLv(){
+  if(PLAN.paid && PLAN.type==='proplus') return 2;
+  if(PLAN.paid && PLAN.type==='pro') return 1;
+  if(PLAN.trialPlan && !PLAN.paid && trialLeft()>0) return PLAN.trialPlan==='proplus'?2:1;
+  return 0;
+}
+const isPro = () => planLv()>=1;
+const planNm = () => planLv()===2?'Pro+':planLv()===1?'Pro':'Bepul';
+
+function selectPlan(p){
+  if(p==='free'){PLAN={type:'free',paid:false,trialPlan:null,trialStart:null};savePLAN();updatePlan();toast('Bepul rejaga o\'tildi');return;}
+  $('pay-pn').textContent=p==='pro'?'Pro — $10/oy':'Pro+ — $15/oy';
+  $('mo-pay').dataset.plan=p; openMo('mo-pay');
+}
+function processPay(){
+  const card=$('pay-card').value.replace(/\s/g,''),exp=$('pay-exp').value,cvv=$('pay-cvv').value;
+  if(card.length<16||!exp||cvv.length<3){toast('❌ Karta ma\'lumotlarini to\'liq kiriting!');return;}
+  const btn=$('pay-btn'); btn.textContent='Yuklanmoqda...'; btn.disabled=true;
+  setTimeout(()=>{
+    PLAN={type:$('mo-pay').dataset.plan,paid:false,trialPlan:$('mo-pay').dataset.plan,trialStart:Date.now()};
+    savePLAN(); closeMo('mo-pay'); updatePlan(); updateAll();
+    toast('🎉 '+planNm()+' sinovi boshlandi! 7 kun bepul.');
+    btn.textContent='7 kun bepul 🚀'; btn.disabled=false;
+  },1200);
+}
+function payTrial(){
+  const card=$('texp-c').value.replace(/\s/g,''),exp=$('texp-e').value,cvv=$('texp-cv').value;
+  if(card.length<16||!exp||cvv.length<3){toast('❌ Karta ma\'lumotlarini kiriting!');return;}
+  const btn=$('texp-btn'); btn.textContent='Yuklanmoqda...'; btn.disabled=true;
+  setTimeout(()=>{
+    PLAN.paid=true; PLAN.paidDate=Date.now(); savePLAN();
+    $('texp').classList.remove('on'); updatePlan(); updateAll();
+    toast('🎉 To\'lov qabul qilindi! '+planNm()+' faol!');
+    btn.textContent='To\'lash va davom etish 💳'; btn.disabled=false;
+  },1200);
+}
+function updatePlan(){
+  const lv=planLv(),tl=trialLeft(),nm=planNm();
+  const plHtml=lv===2?'🚀 Pro+':lv===1?`⚡ Pro${!PLAN.paid&&tl>0?' ('+tl+'k)':''}`:'🆓 Bepul';
+  const plCls=lv===2?'pb-2':lv===1?'pb-1':'pb-0';
+  ['sb-pl','pr-pl'].forEach(id=>{const el=$(id);if(el){el.className='plb '+plCls;el.textContent=plHtml;}});
+  ['fr','pr','pm'].forEach(key=>{
+    const p=key==='fr'?'free':key==='pr'?'pro':'proplus';
+    const b=$('pb-'+key),ct=$('ct-'+key); if(!b||!ct) return;
+    ct.style.display='none'; b.disabled=false;
+    const cur=(PLAN.type===p&&(PLAN.paid||(PLAN.trialPlan===p&&tl>0)))||(p==='free'&&lv===0);
+    if(cur){ct.style.display='block';b.textContent=p==='free'?'Joriy plan':tl>0?tl+' kun qoldi':'Faol';}
+    else b.textContent=p==='free'?'Tanlash':'7 kun bepul';
+  });
+  const sl=$('st-lock'),sc=$('st-cont'); if(sl&&sc){sl.style.display=isPro()?'none':'block';sc.style.display=isPro()?'block':'none';}
+  const bl=$('bmi-lk'),bc=$('bmi-ct'); if(bl&&bc){bl.style.display=isPro()?'none':'block';bc.style.display=isPro()?'block':'none';}
+  if($('lk-s'))$('lk-s').textContent=isPro()?'':'🔒';
+  const tw=$('tw'); if(tw){if(!PLAN.paid&&tl>0&&tl<=3){tw.classList.add('on');if($('tw-t'))$('tw-t').textContent=tl===1?'Bugun oxirgi kun! 🚨':tl+' kun qoldi ⚠️';}else tw.classList.remove('on');}
+  if(trialExpired()){const t=$('texp');if(t&&!t.classList.contains('on')){if($('texp-pn'))$('texp-pn').textContent=PLAN.trialPlan==='proplus'?'Pro+ — $15/oy':'Pro — $10/oy';t.classList.add('on');}}
+  const pi=$('pl-info'); if(pi){pi.innerHTML=lv===0?`<div style="font-size:13px;color:var(--mu2)">Joriy: <b style="color:var(--tx)">Bepul</b></div><div style="font-size:11px;color:var(--mu);margin-top:3px">Funksiyalar cheklangan</div>`:`<div style="font-size:13px;color:var(--mu2)">Joriy: <b style="color:var(--bl)">${nm}</b></div>${tl>0?'<div style="font-size:11px;color:var(--gr);margin-top:3px">✅ Sinov: '+tl+' kun qoldi</div>':''}`;} 
+}
+
+// ─── NAV ─────────────────────────────────────────────────────
+function nav(id,btn){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  const pg=$('pg-'+id); if(pg) pg.classList.add('on');
+  document.querySelectorAll('.nb').forEach(n=>n.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  if(id==='dashboard') updateAll();
+  else if(id==='ovqatlar') updOvq();
+  else if(id==='suv') updSuv();
+  else if(id==='uyqu') updUyqu();
+  else if(id==='statistika') updStat();
+  else if(id==='maqsadlar') updMaqsad();
+  else if(id==='sozlamalar') updSoz();
+  else if(id==='planlar') updatePlan();
+}
+
+// ─── TIME ─────────────────────────────────────────────────────
+function updateTime(){
+  const n=new Date(),h=p2(n.getHours()),m=p2(n.getMinutes()),s=p2(n.getSeconds());
+  if($('clock'))$('clock').textContent=h+':'+m+':'+s;
+  if($('datep'))$('datep').textContent='📅 '+DAYS[n.getDay()]+', '+n.getDate()+' '+MONTHS[n.getMonth()];
+  const hr=n.getHours();
+  const[gr,em]=hr>=5&&hr<12?['Xayrli tong','🌅']:hr>=12&&hr<17?['Xayrli kun','☀️']:hr>=17&&hr<21?['Xayrli kech','🌆']:['Xayrli tun','🌙'];
+  if($('gr-h'))$('gr-h').innerHTML=gr+' <span>'+em+'</span>';
+}
+function updateTip(){
+  const t=TIPS[new Date().getHours()%TIPS.length];
+  if($('tip-i'))$('tip-i').textContent=t.i;
+  if($('tip-t'))$('tip-t').innerHTML=t.t;
+}
+
+// ─── SCORE ────────────────────────────────────────────────────
+function calcScore(){
+  const wg=SETT.waterGoal||2500,sg=SETT.sleepGoal||8,kg=SETT.kcalGoal||2200;
+  const ts=SH.find(h=>h.date===dk());
+  return Math.round(Math.min(30,(D.waterMl/wg)*30)+Math.min(35,ts?Math.min(1,ts.hours/sg)*35:0)+Math.min(35,Math.min(1,(D.kcal||0)/kg)*35));
+}
+function updScore(){
+  const sc=calcScore(),c=sc>=80?'var(--gr)':sc>=60?'var(--bl)':sc>=40?'var(--ye)':'var(--or)';
+  if($('sc-n'))$('sc-n').textContent=sc;
+  if($('rg')){$('rg').style.strokeDashoffset=283-(sc/100)*283;$('rg').style.stroke=c;}
+  const msgs=['Boshlang! 🚀','O\'rtacha 💪','Yaxshi 👍','Ajoyib! 🏆'];
+  if($('sc-m'))$('sc-m').textContent=msgs[sc>=80?3:sc>=60?2:sc>=40?1:0];
+  if($('gr-s')){const wp=Math.round((D.waterMl/(SETT.waterGoal||2500))*100);$('gr-s').textContent=(SETT.name||'')+(wp<30?', suv ichishni unutmang 💧':wp>=80?', suv maqsadiga yaqin 💧':', yaxshi ish, davom eting 💪');}
+}
+
+// ─── WATER ───────────────────────────────────────────────────
+function renderGlasses(gid){
+  const el=$(gid); if(!el) return; el.innerHTML='';
+  for(let i=0;i<10;i++){
+    const d=document.createElement('div'); d.className='glass'+(i<D.glasses?' on':'');
+    d.textContent=i<D.glasses?'💧':'🫙';
+    d.onclick=()=>{D.glasses=i<D.glasses?i:i+1;D.waterMl=D.glasses*250;saveD();updateAll();};
+    el.appendChild(d);
+  }
+}
+function addGlass(){if(D.glasses<10){D.glasses++;D.waterMl=D.glasses*250;saveD();updateAll();}}
+function addW(ml){D.waterMl+=ml;D.glasses=Math.min(10,Math.round(D.waterMl/250));saveD();updateAll();}
+function addWcustom(){const ml=parseInt($('cw').value)||0;if(ml>0){addW(ml);$('cw').value='';closeMo('mo-w');}}
+function updWater(){
+  const wg=SETT.waterGoal||2500,l=(D.waterMl/1000).toFixed(1),pct=Math.min(100,(D.waterMl/wg)*100);
+  const s=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
+  const sw=(id,v)=>{const e=$(id);if(e)e.style.width=v+'%';};
+  s('wl',l);s('st-w',l+'L');s('bw',l+'L');
+  sw('pb-w',pct);sw('bwb',pct);
+  s('gl-b1',D.glasses+'/10');s('gl-b2',D.glasses+'/10');
+  s('wgl',(wg/1000).toFixed(1));s('bwg',(wg/1000).toFixed(1));
+  s('bwp',Math.round(pct)+'% bajarildi');
+  s('gl-w','Maqsad: '+(wg/1000).toFixed(1)+'L');
+  renderGlasses('g1');renderGlasses('g2');
+}
+
+// ─── SLEEP ───────────────────────────────────────────────────
+const hm=f=>{const h=Math.floor(f),m=Math.round((f-h)*60);return h+':'+p2(m);};
+const slQ=h=>h>=8?'🏆 Ajoyib!':h>=7?'👍 Yaxshi!':h>=6?'😐 Qoniqarli':'⚠️ Kam!';
+function calcSleep(){
+  const st=$('sl-st').value,en=$('sl-en').value; if(!st||!en) return;
+  let[sh,sm]=st.split(':').map(Number),[eh,em]=en.split(':').map(Number);
+  let mins=(eh*60+em)-(sh*60+sm); if(mins<0)mins+=1440;
+  const h=Math.floor(mins/60),mn=mins%60,tot=h+mn/60,str=h+':'+p2(mn);
+  if($('sl-dur'))$('sl-dur').textContent=str;
+  if($('sl-q'))$('sl-q').textContent=slQ(tot);
+  if($('sl-d'))$('sl-d').textContent=hm(tot*.25);
+  if($('sl-r'))$('sl-r').textContent=hm(tot*.20);
+  if($('sl-l'))$('sl-l').textContent=hm(tot*.55);
+}
+function saveSleep(){
+  const st=$('sl-st').value,en=$('sl-en').value;
+  let[sh,sm]=st.split(':').map(Number),[eh,em]=en.split(':').map(Number);
+  let mins=(eh*60+em)-(sh*60+sm); if(mins<0)mins+=1440;
+  const h=Math.floor(mins/60),mn=mins%60,tot=h+mn/60,str=h+':'+p2(mn);
+  const e={date:dk(),hours:tot,str,start:st,end:en};
+  const i=SH.findIndex(h=>h.date===dk()); if(i>=0)SH[i]=e; else SH.push(e);
+  saveSH(); updateAll(); toast('✅ Uyqu saqlandi: '+str);
+}
+function renderSleepChart(id){
+  const el=$(id); if(!el) return; el.innerHTML='';
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const dt=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    const e=SH.find(h=>h.date===dt),hrs=e?e.hours:0;
+    const w=document.createElement('div'); w.className='slb-w';
+    w.innerHTML='<div class="slb'+(hrs>0?' on':'')+'" style="height:'+Math.max(5,(hrs/10)*100)+'%" title="'+hrs.toFixed(1)+'h"></div><div class="slb-d">'+SDS[d.getDay()]+'</div>';
+    el.appendChild(w);
+  }
+}
+function updSleep(){
+  const ts=SH.find(h=>h.date===dk()),sg=SETT.sleepGoal||8;
+  if(ts){if($('st-s'))$('st-s').textContent=ts.str+'s';if($('pb-s'))$('pb-s').style.width=Math.min(100,(ts.hours/sg)*100)+'%';if($('sl-last'))$('sl-last').textContent=ts.str;if($('sl-tm'))$('sl-tm').innerHTML='😴 '+ts.start+'<br>⏰ '+ts.end;}
+  else if($('st-s'))$('st-s').textContent='—';
+  if($('gl-s'))$('gl-s').textContent='Maqsad: '+sg+'s';
+  renderSleepChart('slc1'); renderSleepChart('slc2');
+  const tot=SH.reduce((a,b)=>a+b.hours,0),cnt=SH.length||1,best=SH.length?Math.max(...SH.map(h=>h.hours)):0;
+  if($('sl-av'))$('sl-av').textContent='O\'rt: '+(tot/cnt).toFixed(1)+'s';
+  if($('sl-av2'))$('sl-av2').textContent='O\'rt: '+(tot/cnt).toFixed(1)+'s';
+  if($('sl-be'))$('sl-be').textContent=best>0?hm(best):'—';
+  if($('sl-av-v'))$('sl-av-v').textContent=cnt>0?hm(tot/cnt):'—';
+  if($('sl-gl'))$('sl-gl').textContent=hm(sg);
+}
+
+// ─── FOOD ─────────────────────────────────────────────────────
+function openFoodMo(){
+  const lim=$('fm-lim'),btn=$('fm-btn');
+  if(planLv()===0&&D.meals.length>=5){lim.style.display='block';btn.disabled=true;}
+  else{lim.style.display='none';btn.disabled=false;}
+  $('fm-t').textContent="🥗 Ovqat qo'shish"; $('fm-btn').textContent="Qo'shish 🔥";
+  delete $('mo-food').dataset.ei;
+  ['fn','fc','fp','fb','ff'].forEach(id=>$(id).value='');
+  $('ft').value=new Date().toTimeString().slice(0,5);
+  openMo('mo-food');
+}
+function addFood(){
+  const name=$('fn').value.trim(),cal=parseInt($('fc').value)||0;
+  if(!name||!cal){toast('❌ Nom va kaloriyani kiriting!');return;}
+  const time=$('ft').value||new Date().toTimeString().slice(0,5);
+  const p=parseInt($('fp').value)||0,b=parseInt($('fb').value)||0,f=parseInt($('ff').value)||0;
+  const ei=$('mo-food').dataset.ei;
+  if(ei!==undefined&&ei!==''){
+    const i=parseInt(ei),old=D.meals[i];
+    D.kcal-=old.cal;D.protein-=(old.protein||0);D.carbs-=(old.carbs||0);D.fat-=(old.fat||0);
+    D.meals[i]={...old,name,cal,time,protein:p,carbs:b,fat:f};
+    D.kcal+=cal;D.protein+=p;D.carbs+=b;D.fat+=f;toast('✅ Yangilandi');
+  } else {
+    if(planLv()===0&&D.meals.length>=5){toast('⚠️ Bepul planda 5 ta limit!');return;}
+    D.meals.push({name,cal,time,protein:p,carbs:b,fat:f,icon:ICS[Math.floor(Math.random()*ICS.length)]});
+    D.kcal+=cal;D.protein+=p;D.carbs+=b;D.fat+=f;toast("✅ Qo'shildi");
+  }
+  saveD(); renderMeals(); updateAll(); closeMo('mo-food');
+}
+function delMeal(i){
+  if(!confirm('"'+D.meals[i].name+'" o\'chirasizmi?')) return;
+  const m=D.meals[i];D.kcal-=m.cal;D.protein-=(m.protein||0);D.carbs-=(m.carbs||0);D.fat-=(m.fat||0);
+  D.meals.splice(i,1);saveD();renderMeals();updateAll();toast("🗑️ O'chirildi");
+}
+function editMeal(i){
+  const m=D.meals[i];
+  $('fn').value=m.name;$('fc').value=m.cal;$('ft').value=m.time;
+  $('fp').value=m.protein||'';$('fb').value=m.carbs||'';$('ff').value=m.fat||'';
+  $('mo-food').dataset.ei=i;
+  $('fm-t').textContent='✏️ Tahrirlash'; $('fm-btn').textContent='💾 Saqlash';
+  $('fm-lim').style.display='none'; $('fm-btn').disabled=false;
+  openMo('mo-food');
+}
+function mHtml(m,i){return '<div class="meal"><div class="m-ic">'+m.icon+'</div><div style="flex:1"><div class="m-nm">'+m.name+'</div><div class="m-tm">'+m.time+'</div></div><div class="m-kc">'+m.cal+' kcal</div><div class="mal"><button class="mb" onclick="editMeal('+i+')">✏️</button><button class="mb" onclick="delMeal('+i+')">🗑️</button></div></div>';}
+function renderMeals(){
+  const h=D.meals.length?D.meals.map((m,i)=>mHtml(m,i)).join(''):'<div class="empty">Hali ovqat qo\'shilmagan</div>';
+  ['ml1','ml2'].forEach(id=>{const e=$(id);if(e)e.innerHTML=h;});
+  if($('mc'))$('mc').textContent=D.meals.length+' ta';
+}
+function updKcal(){
+  const kg=SETT.kcalGoal||2200,pct=Math.min(100,((D.kcal||0)/kg)*100);
+  const s=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
+  const sw=(id,v)=>{const e=$(id);if(e)e.style.width=v+'%';};
+  s('st-k',D.kcal||0);sw('pb-k',pct);s('kp',Math.round(pct)+'%');
+  s('cr-n',D.kcal||0);s('gl-k','Maqsad: '+kg);
+  if($('cr1'))$('cr1').style.strokeDashoffset=188-(pct/100)*188;
+  sw('mc-c',Math.min(100,((D.carbs||0)/300)*100));sw('mc-p',Math.min(100,((D.protein||0)/150)*100));
+  if($('mc-f'))$('mc-f').style.width=Math.min(100,((D.fat||0)/80)*100)+'%';
+  s('mv-c',(D.carbs||0)+'g');s('mv-p',(D.protein||0)+'g');s('mv-f',(D.fat||0)+'g');
+}
+
+// ─── WEEKLY ──────────────────────────────────────────────────
+function renderWeek(id){
+  const el=$(id); if(!el) return; el.innerHTML='';
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const dt=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),today=i===0;
+    const sh=SH.find(h=>h.date===dt),sc=today?calcScore():sh?Math.min(100,(sh.hours/(SETT.sleepGoal||8))*100):0;
+    const cls=sc>=80?'g':sc>=60?'b':sc>=40?'y':sc>0?'r':'';
+    const col=document.createElement('div'); col.className='wkc';
+    col.innerHTML='<div class="wkd">'+SDS[d.getDay()]+'</div><div class="wkdot'+(cls?' '+cls:'')+'" title="'+Math.round(sc)+'"></div><div class="wks">'+(sc>0?Math.round(sc):'—')+'</div>';
+    el.appendChild(col);
+  }
+}
+
+// ─── SETTINGS & PROFILE ──────────────────────────────────────
+function saveSett(){
+  SETT.waterGoal=(parseFloat($('si-w').value)||2.5)*1000;
+  SETT.sleepGoal=parseFloat($('si-s').value)||8;
+  SETT.kcalGoal=parseInt($('si-k').value)||2200;
+  SETT.weight=parseFloat($('si-wt').value)||0;
+  SETT.height=parseFloat($('si-h').value)||0;
+  SETT.age=parseInt($('si-a').value)||0;
+  saveSETT(); updateAll(); toast('✅ Saqlandi');
+}
+function saveProfile(){
+  const nm=$('pi-n').value.trim(); if(!nm) return;
+  SETT.name=nm; SETT.goal=$('pi-g').value; saveSETT(); closeMo('mo-pr'); updSoz(); updateAll(); toast('✅ Profil saqlandi');
+}
+function updSoz(){
+  const s=(id,v)=>{const e=$(id);if(e)e.value=v;};
+  s('si-w',(SETT.waterGoal||2500)/1000); s('si-s',SETT.sleepGoal||8); s('si-k',SETT.kcalGoal||2200);
+  s('si-wt',SETT.weight||''); s('si-h',SETT.height||''); s('si-a',SETT.age||'');
+  const nm=SETT.name||'Foydalanuvchi';
+  if($('pr-nm'))$('pr-nm').textContent=nm;
+  if($('pr-gl'))$('pr-gl').textContent='Maqsad: '+(SETT.goal||"Sog'lom hayot");
+  if($('pr-av')){$('pr-av').textContent=nm[0].toUpperCase();}
+  if($('sb-av'))$('sb-av').textContent=nm[0].toUpperCase();
+  if($('sb-nm'))$('sb-nm').textContent=nm;
+  calcBMI(); updatePlan();
+}
+function calcBMI(){
+  if(!isPro()){if($('bmi-lk'))$('bmi-lk').style.display='block';if($('bmi-ct'))$('bmi-ct').style.display='none';return;}
+  if($('bmi-lk'))$('bmi-lk').style.display='none';if($('bmi-ct'))$('bmi-ct').style.display='block';
+  const w=SETT.weight,h=SETT.height; if(!w||!h){if($('bmi-s'))$('bmi-s').textContent='Vazn va bo\'yni kiriting';return;}
+  const bmi=+(w/((h/100)**2)).toFixed(1);
+  const[st,col]=bmi<18.5?['Kam vazn ⬇️','var(--bl)']:bmi<25?["Normal ✅",'var(--gr)']:bmi<30?['Ortiqcha ⚠️','var(--ye)']:['Semizlik 🔴','var(--re)'];
+  if($('bmi-n')){$('bmi-n').textContent=bmi;$('bmi-n').style.color=col;}
+  if($('bmi-s'))$('bmi-s').textContent=st;
+}
+
+// ─── PAGE UPDATERS ────────────────────────────────────────────
+function updOvq(){
+  const kg=SETT.kcalGoal||2200,pct=Math.min(100,((D.kcal||0)/kg)*100);
+  if($('ov-k'))$('ov-k').textContent=D.kcal||0;
+  if($('ov-r'))$('ov-r').textContent=Math.max(0,kg-(D.kcal||0));
+  if($('ov-p'))$('ov-p').textContent=(D.protein||0)+'g';
+  if($('ov-c'))$('ov-c').textContent=(D.carbs||0)+'g';
+  if($('cr2'))$('cr2').style.strokeDashoffset=239-(pct/100)*239;
+  if($('cr-n2'))$('cr-n2').textContent=D.kcal||0;
+  if($('kb'))$('kb').style.width=pct+'%';
+  if($('ks'))$('ks').textContent=Math.round(pct)+'% bajarildi ('+kg+' kcal)';
+  renderMeals();
+}
+function updSuv(){ updWater(); }
+function updUyqu(){
+  const ts=SH.find(h=>h.date===dk());
+  if(ts){if($('sl-st'))$('sl-st').value=ts.start||'23:00';if($('sl-en'))$('sl-en').value=ts.end||'07:00';calcSleep();}
+  renderSleepChart('slc2');
+}
+function updStat(){
+  if(!isPro()) return;
+  const tot=SH.reduce((a,b)=>a+b.hours,0),cnt=SH.length||1;
+  if($('ss-w'))$('ss-w').textContent=(D.waterMl/1000).toFixed(1)+'L';
+  if($('ss-s'))$('ss-s').textContent=hm(tot/cnt);
+  if($('ss-k'))$('ss-k').textContent=(D.kcal||0)+' kcal';
+  renderWeek('wkg2');
+}
+function updMaqsad(){
+  const kg=SETT.kcalGoal||2200,wg=SETT.waterGoal||2500,sg=SETT.sleepGoal||8;
+  const ts=SH.find(h=>h.date===dk());
+  const goals=[
+    {ic:'💧',nm:'Suv maqsadi',pct:Math.min(100,(D.waterMl/wg)*100),col:'var(--bl)',desc:(D.waterMl/1000).toFixed(1)+'L / '+(wg/1000).toFixed(1)+'L'},
+    {ic:'😴',nm:'Uyqu maqsadi',pct:ts?Math.min(100,(ts.hours/sg)*100):0,col:'var(--pu)',desc:ts?ts.str+' / '+sg+'s':'Hali kiritilmagan'},
+    {ic:'🔥',nm:'Kaloriya maqsadi',pct:Math.min(100,((D.kcal||0)/kg)*100),col:'var(--or)',desc:(D.kcal||0)+' / '+kg+' kcal'},
+    {ic:'📊',nm:"Sog'liq balli",pct:calcScore(),col:'var(--gr)',desc:'Bugungi umumiy ball'},
+  ];
+  const g=$('goals'); if(!g) return;
+  g.innerHTML=goals.map(gl=>'<div class="gc"><div style="font-size:22px;margin-bottom:5px">'+gl.ic+'</div><div style="font-size:13px;font-weight:700">'+gl.nm+'</div><div style="font-size:11px;color:var(--mu2);margin-bottom:4px">'+gl.desc+'</div><div class="gb"><div class="gf" style="width:'+gl.pct+'%;background:'+gl.col+'"></div></div><div class="gp" style="color:'+gl.col+'">'+Math.round(gl.pct)+'%</div></div>').join('');
+}
+
+// ─── UPDATE ALL ───────────────────────────────────────────────
+function updateAll(){
+  updWater(); updSleep(); updKcal(); updScore(); renderMeals(); renderWeek('wkg1'); updatePlan();
+  const nm=SETT.name||'Foydalanuvchi';
+  if($('sb-nm'))$('sb-nm').textContent=nm;
+  if($('sb-av'))$('sb-av').textContent=nm[0].toUpperCase();
+}
+
+// ─── UTILS ───────────────────────────────────────────────────
+function openMo(id){const e=$(id);if(e)e.classList.add('on');}
+function closeMo(id){const e=$(id);if(e)e.classList.remove('on');}
+function toast(msg,dur=2600){const t=$('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),dur);}
+function fmtCard(el){el.value=el.value.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim();}
+function clearToday(){if(confirm('Bugungi ma\'lumotlar o\'chirilsinmi?')){D={date:dk(),waterMl:0,glasses:0,kcal:0,protein:0,carbs:0,fat:0,meals:[]};saveD();updateAll();toast("🗑️ Bugungi ma'lumotlar o'chirildi");}}
+function clearAll(){if(confirm('BARCHA ma\'lumotlar o\'chirilsinmi? Bu qaytarib bo\'lmaydi!')){localStorage.clear();location.reload();}}
+
+// ─── KEYBOARD ────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.mo.on,.texp.on').forEach(m=>m.classList.remove('on'));}});
+document.querySelectorAll('.mo').forEach(mo=>{mo.addEventListener('click',e=>{if(e.target===mo)mo.classList.remove('on');});});
+
+// ─── BOOT ─────────────────────────────────────────────────────
+window._boot = function(){
+  loadState();
+  updateAll(); updateTime(); updateTip();
+  setInterval(updateTime,1000);
+  setInterval(updateTip,3600000);
+  if(!PLAN.trialStart&&planLv()>0){PLAN.trialStart=Date.now();savePLAN();}
+};
+// If Firebase already loaded user (rare), boot
+if(window._uid && document.getElementById('app').style.display==='grid') window._boot();
+</script>
+</body>
+</html>
